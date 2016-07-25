@@ -1,35 +1,8 @@
-/*
- * scorbot_arduino - control scorbot-ER 4PC
- *
- * control an joint of a scorbot-ER 4PC from an external interface via serial communication
- *
- *   - PAY ATTENTION: input message must end with a character LF for proper operation
- *
- * copyright (c) 2016 marnie & mark
- *
- * GNU General Public License
- *
- * references:
- *   - http://totaki.com/poesiabinaria/2010/12/separar-palabras-de-una-cadena-de-caracteres-en-un-array-c/
- *   - http://www.dyadica.co.uk/simple-serial-string-parsing/ [0.2]
- *   - http://www.arduino.cc/en/Tutorial/SerialEvent
- *   - http://forum.arduino.cc/index.php?topic=209407.0
- *   - http://arduino.cc/en/Tutorial/AnalogInOutSerial
- *   - http://playground.arduino.cc/Main/RotaryEncoders
- *   - http://playground.arduino.cc/Code/Timer1
- *
- * version history
- *   0.8, 2016,06,13, m&m: again from scratch, just for a single joint
- *   0.7, 2016.06.06, m&m: start from scratch
- *   0.6, 2016.05.25, m&m: concactString, a diferent function to reply each command
- *   0.5, 2016.05.25, m&m:
- *   0.4, 2016.05.25, m&m: parseString (thanks gaspar fernandez)
- *   0.3, 2016.05.25, m&m: isValidNumber (thanks hbx2013)
- *   0.2, 2016.05.25, m&m: strtok_r for parsing a string (thanks dyadica)
- *   0.1, 2016.05.24, m&m: Serial.readString (thaks vicente arevalo)
- *   0.0, 2016.05.24, m&m: alfa release
- */
 
+
+/*
+ * Esquema del programa para controlar 3 ejes del scorbot, como master o como slave
+ */
 /*
 ------------------------------------------------------------------------------------------------
 0         1         2         3         4         5         6         7         8         9
@@ -38,371 +11,141 @@
 */
 
 // INCLUDE LIBRARIES
-//#include <TimerOne.h>
+#include <String.h>
+    // Github libraries 
+    #include <Logging.h>
     // Project files
     #include "config.h"
     // Own libraries
+    #include <MySerial.h>
 
-// STRUCTURE FUNCTIONS
-/*
- * setup - system initialize 
- */
+    
+// GLOBAL VARIABLES esto en config
+bool        iAmMaster  = true;
+short       debugMode  = LOG_LEVEL_NOOUTPUT;
+MySerial    mySerial   = MySerial();
+Logging     Log        = Logging();
+
+
 void setup() {
-  // configure inputs
-  pinMode(phaseAPin, INPUT_PULLUP);
-  pinMode(phaseBPin, INPUT_PULLUP);
-  pinMode(homePin, INPUT_PULLUP);
-
-  // configure output
-  pinMode(brakePin, OUTPUT);
-  pinMode(dirPin, OUTPUT);
-  pinMode(homeLedPin, OUTPUT);
-
-  // encoder signals setup
-  attachInterrupt(0, doEncoderA, CHANGE);
-  attachInterrupt(1, doEncoderB, CHANGE);
-
-  // timer interrupts configuration
-//  Timer1.initialize(long(1e6 * sampleTime)); // set control loop timer interval
-//  Timer1.attachInterrupt(pidControl);  // control function interrupt
   
-  // start serial port at 9600 bps
-  Serial.begin(9600);
+  // ver si hay que hacer un if( iammaster)
+  Log.Init(debugMode,9600);
+  Log.Info(CR "******************************************" CR);
+  Log.Info("EMPIEZA SESIÓN");
+  Log.Info(CR "******************************************" CR);
 }
 
-/*
- *   loop - execute commands receive via serial port and control a scorbot join
- */
- void loop() {
-  static String args[MAX_ARGS];
-  int errorCode;
+
+void loop() {  
+  String args[MAX_ARGS];
   int nargs;
+  int error;
+/* 
+ *  READ ALL DIGITAL INPUTS; ACTUAL STATE. 
+*/
+  //homeValue = !digitalRead(homePin);
+  //...
 
-  // read digital inputs
-  homeValue = !digitalRead(homePin);
+/* 
+ *  IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES 
+*/ 
+  if(iAmMaster){   
+      if(stringComplete){
+        nargs = mySerial.parseString( inputString,  token,  MAX_ARGS,  args); 
+        // MyMaster master = MyMaster(); es una instancia de la clase MyMaster.
+        // la función master.order() procesa la información recibida, envía las consignas a los slaves y se queda con el comando que debe ejecutar en los ejes a su cargo
+          //nargs = master.order(args,nargs); 
+      };
+  }
+/* 
+ *  ELSE: ONLY REED I2C CONNECTION TO GET A NEW COMMAND TO EXECUTE
+*/  
+  else{
+    //myI2C.read();
+  }
+/* 
+ *  EXECUTE COMMAND. ONLY ACTUALIZATE THE STATE OF GLOBAL VARIABLES; DOESNT IMPLY ACT( NO DIGITAL WRITES)
+*/
 
-  // execute received command
-  if (stringComplete) {
-    inputString.toUpperCase();
-
-    // parse inputString
-    if (inputString != " ")
-      nargs = parseString(inputString, token, MAX_ARGS, args);
-
-    // execute the command
-    errorCode = doCommand(args);
-
-    // send echo
-    if (echoMode) {
-      Serial.println(concatString(args, token));
-      if (errorCode == -1)
-        Serial.println("ERROR #1: WRONG_PARAMETER");
-      else if (errorCode == -2)
-        Serial.println("ERROR #2: WRONG_CMD " + args[0]);
-    }
-
-    // reset communication variables
+   error = doCommand(args);
+  
+/* 
+ *  IF A NEW POSITION HAS BEEN RECIEVED TO ACHIEVE BY COMMAND; CALCULATE PID ACTUATION.
+*/
+    // MyAxis axis1 = new MyAxis(); son instancias de la clase MyAxis
+    // axis1.positionControl(MOVE,POSITION); si se ha dicho que se mueva además de decir una nueva posición
+    // axis2.positionControl();
+    // axis3.positionControl();
+/* 
+ *  EXECUTE STATE MACHINE FOR SEARCHING HOME IF COMMAND HAS BEEN ACTIVATED. CALCULATE PID ACTUATION
+*/
+    // axis1.homming(MOVE);
+    // axis2.homming();
+    // axis3.homming();
+  
+/* 
+ *  All new values of actuations wil be set in theirs pins
+*/    
+  //digitalWrite(brakePin, brakeValue);
+  //digitalWrite(dirPin, dirValue);
+  //digitalWrite(homeLedPin, homeValue);
+  
+/* 
+ *   ALL THE LOG WILL BE SHOWN.
+ *  
+ *  La respuesta será un array de string compuesto por el string de cada modo: error, info, debug,verbose y se mostrará según el modo en el que se encuentre el programa
+*/
+    Log.Error(CR "is this an real error? %d" CR, error);
+    Log.Info(CR "have fun with this Log. error code: %d\n" CR ,error);
+    Log.Debug(CR "only will be showed if debug mode is set %d\n" CR ,error);
+    Log.Verbose(CR "only will be showed if verbose mode is set %d\n" CR ,error);
+    
     inputString = "";
     stringComplete = false;
-  }
+    memset(args,'\0',MAX_ARGS);
 
-  // find join home microswitch
-  if (goHome) 
-    doHoming();
 
-  if (pidEnabled)
-    pidControl();
+/* 
+ * UPDATE IMAGE VARIABLES
+*/ 
+    /* 
+    _encoderValue = encoderValue;
+    _clockwise = clockwise;
+    _homeValue = homeValue;
+    _motorValue = motorValue;
+    _stall = stall;
+    */ 
 
-  // calculate motor stall
-  stall = (motorValue >= pwmMinimum) && (_encoderValue == encoderValue);
-  if (!_stall && stall) {
-    startTime = millis();
-    Serial.println("trigger motor stall timer");
-  }
-  if (stall) {
-    if ((millis() - startTime) >= stallDelay) {
-      brakeValue = true;
-      Serial.println("motor stall");
-    }
-  }
-  
-  // write pwm outputs
-  if (pidEnabled) {
-    dirValue = (pidOutput < 0);
-    motorValue = brakeValue ? 0 : limit(abs(pidOutput), 0, 255);
-  }
-  else
-    motorValue = brakeValue ? 0 : map(joinSpeed, 0, 100, pwmMinimum, 255);
-  analogWrite(motorPin, motorValue);
-
-  // write digital outputs
-  digitalWrite(brakePin, brakeValue);
-  digitalWrite(dirPin, dirValue);
-  digitalWrite(homeLedPin, homeValue);
-  
-  // send changes
-  if (verboseMode) {
-    if (_encoderValue != encoderValue)
-      Serial.println("POSITION" + token + String(RES * encoderValue) + " [" + String(encoderValue) + "]");
-    if (_clockwise != clockwise)
-      Serial.println("DIRECTION" + token + BOOL_TO_STRING(clockwise));
-    if (_homeValue != _homeValue)
-      Serial.println("HOME" + token + BOOL_TO_STRING(homeValue));
-    if (pidEnabled)
-      Serial.println("pid (current:target:error:output), = " + String(currentPoint)+ ":" + String(targetPoint) + ":" + String(error) + ":" + String(pidOutput));
-  }
-
-  // update image variables
-  _encoderValue = encoderValue;
-  _clockwise = clockwise;
-  _homeValue = homeValue;
-  _motorValue = motorValue;
-  _stall = stall;
-  
-  delay(cycleTime);
+  delay(1000);        
 }
 
-// USERS FUNCTIONS
 
-/*
- * pidControl
- */
-void pidControl() {
-  static float errorSum;      // accumulated error
-  static float _error;        // error previous value
-  static float _currentPoint; // process variable previous value 
-  float derror;               // derivative error
 
-  currentPoint = RES * encoderValue;
-  error = targetPoint - currentPoint;
-  errorSum += (error * sampleTime);
-  derror = (error - _error) / sampleTime;
-  pidOutput = kp * error + ki * errorSum + kd * derror;
+/*------------------------------------------------------------------------------------------------
+ *  OTHERS FUNCTIONS
+ *------------------------------------------------------------------------------------------------
+*/
 
-  if (abs(error) < 2) {
-    pidEnabled = false;
-    brakeValue = true;
-    dirValue = false;
-    errorSum = 0;
-    pidOutput = 0;
-  }
-  
-  // register previous data
-  _error = error;
-  _currentPoint = currentPoint;
-}
- 
-/*
- * doHoming - find home join position
- */
-void doHoming() {
-  static int preSpeed;
-  
-  switch (homingState) {
-    case 0: // ready
-      if (goHome) {
-        preSpeed = joinSpeed;
-        joinSpeed = 100;
-        dirValue = true; // ccw
-        brakeValue = false;
-        homingState = 1;
-        Serial.println("buscando home rapido");
-      }
-      break;
-    case 1: // go quickly towards home micro-switch 
-      if (homeValue) {
-        encoderValue = 0;
-        homingState = 2;
-        Serial.println("sobrepasando home");
-      }
-      else if (brakeValue) { // motor stall because join limit has been reached
-        dirValue = false; // cw
-        brakeValue = false;
-        homingState = 5;
-        Serial.println("tope alcanzado, cambio de direccion");
-      }
-      break;
-    case 2: // overtaking home micro-switch
-      if (abs(encoderValue) >= overtake) {
-        joinSpeed = 50;
-        dirValue = false; // cw
-        homingState = 3; 
-        Serial.println("cambio de direccion, buscando home lento");
-      }
-      break;
-    case 3: // go slowly backwards home micro-switch
-      if (homeValue) {
-        encoderValue = 0;
-        joinSpeed = preSpeed;
-        brakeValue = true;
-        homed = true;
-        goHome = false;
-        homingState = 0;
-        Serial.println("homming finalizado");
-      }
-      break;
-
-    case 5: // motor stall, go quickly backwards home micro-switch
-      if (homeValue) {
-        encoderValue = 0;
-        homingState = 6;
-        Serial.println("sobrepasando home en contra-direccion");
-      }
-      break;
-    case 6: // overtaking home micro-switch 
-      if (abs(encoderValue) >= overtake) {
-        dirValue = true; // ccw
-        homingState = 1;
-        Serial.println("buscando home rapido");
-      }
-      break;
-  }
-}
-
-/*
- * BOOL_TO_STRING - 
- */
-String BOOL_TO_STRING(boolean b) {
-  return (b ? "ON" : "OFF");
-}
-
-/*
- * doCommmand - execute commands
- */
 int doCommand(String args[]) {
   int errorCode = 0;
   int n;
-
-  if (args[0] == "VERBOSE")
-    errorCode = setBoolVar(&verboseMode, args[1]);
-
-  else if (args[0] == "ECHO")
-    errorCode = setBoolVar(&echoMode, args[1]);
-
-  else if (args[0] == "VERSION")
-    Serial.println(FIRMWARE_VERSION);
-
-  else if (args[0] == "DIR")
-    errorCode = setBoolVar(&dirValue, args[1]);
-    
-  else if (args[0] == "BRAKE")
-    errorCode = setBoolVar(&brakeValue, args[1]);
-
-  else if (args[0] == "START")
-    errorCode = setBoolVar(&brakeValue, "OFF");
-
-  else if (args[0] == "STOP")
-    errorCode = setBoolVar(&brakeValue, "ON");
-
-  else if (args[0] == "HOME")
-    if (args[1] == "?")
-      Serial.println(BOOL_TO_STRING(homed));
-    else
-      errorCode = setBoolVar(&goHome, "ON");
-
-  else if (args[0] == "MOTOR")
-    Serial.println("Motor value = " + String(motorValue));
-    
-  else if (args[0] == "RESET") {
-    joinSpeed = 0;
-    brakeValue = true;
-    dirValue = false;
-    homingState = 0;
-    goHome = false;
-    pidEnabled = false;
+  if(args[0] == "DEBUG_MODE"){
+    // Comprobar que el args1 está bien puesto por seguridad
+        // 0 ninguna salida
+        // 1 solo los errores
+        // 2 errores y información
+        // 3 error info y debug
+        // 4 todo
+    Log.Init((int)args[1].toFloat(),9600);
   }
-    
-  else if (args[0] == "SPEED")
-    if ((args[1] == "?") || (args[1] == NULL))
-      Serial.println(String(joinSpeed));
-    else if (args[1] == "+")
-      joinSpeed = limit(2 * joinSpeed, 0, 100);
-    else if (args[1] == "-")
-      joinSpeed = limit(joinSpeed / 2, 0, 100);
-    else if (isValidNumber(args[1]))
-      joinSpeed = limit(args[1].toFloat(), 0, 100);
-    else
-      errorCode = -1;
-
-  else if (args[0] == "COUNTER")
-    if ((args[1] == NULL) || (args[1] == "?"))
-      Serial.println(String(encoderValue));
-    else if (args[1] == "RESET")
-      encoderValue = 0;
-    else
-      errorCode = -1;
-
-  else if (args[0] == "POSITION")
-    if ((args[1] == NULL) || (args[1] == "?"))
-      Serial.println(String(RES * encoderValue));
-    else
-      errorCode = -1;
-
-  else if (args[0] == "GO") {
-    if (isValidNumber(args[1])) {
-      targetPoint = limit(args[1].toFloat(), joinMin, joinMax);
-      pidEnabled = true;
-      brakeValue = false;
-      Serial.println("pid enabled, go to : " + String(targetPoint) + " [degrees]");
-    }
-    else
-      errorCode = -1;
-  }
-    
-
   else
     errorCode = -2;
 
   return errorCode;
 }
 
-/*
- * doEncoderA - ISR function for encoder phase A external interrupt
- *
- * If pinA and pinB are both high or both low, it is spinning
- * forward. If they're different, it's going backward.
- */
-void doEncoderA () {
-  if (digitalRead(phaseAPin) == digitalRead(phaseBPin)) {
-    encoderValue++;
-    clockwise = true;
-  }
-  else {
-    encoderValue--;
-    clockwise = false;
-  }
-}
-
-/*
- * doEncoderB - ISR function for encoder phase B external interrupt
- *
- * If pinA and pinB are one high and the other low, it is spinning
- * forward. If they're equal, it's going backward.
-*/
-void doEncoderB () {
-  if (digitalRead(phaseAPin) != digitalRead(phaseBPin)) {
-    encoderValue++;
-    clockwise = true;
-  }
-  else {
-    encoderValue--;
-    clockwise = false;
-  }
-}
-
-/*
- * SerialEvent - get a message from serial RX
- *
- * thanks to Tom Igoe
- *
- * retrieved from: https://www.arduino.cc/en/Tutorial/SerialEvent
- *
- * SerialEvent occurs whenever a new data comes in the
- * hardware serial RX.  This routine is run between each
- * time loop() runs, so using delay inside loop can delay
- * response.  Multiple bytes of data may be available.
- */
-void serialEvent() {
+void serialEvent(){
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
@@ -410,98 +153,11 @@ void serialEvent() {
     // so the main loop can do something about it:
     if (inChar == '\n')
       stringComplete = true;
-    else
+    else{
       // add it to the inputString:
       inputString += inChar;
+      }      
   }
+  inputString.toUpperCase();
 }
-
-/*
- * parseString - split a string into words
- *
- * based on "void ParseSerialData()" (dyadica)
- *
- * retrieved from: http://www.dyadica.co.uk/simple-serial-string-parsing/
- */
-int parseString(String s, String token, int max_args, String args[]) {
-  char *str;
-  char *p;
-  String tmp;
-  int count;
-
-  tmp = s;
-
-  // get words from a string
-  p = &tmp[0];
-  count = 0;
-    while ((str = strtok_r(p, &token[0], &p)) != NULL) {
-    // Add chunk to array
-    args[count] = str;
-    // Increment data count
-    count++;
-    if (count > max_args)
-      return count - 1;
-  }
-  args[count] = "";
-
-  return count;
-}
-
-/*
- * concatString - concatenate words in a single string
- */
-
-String concatString(String args[], String token) {
-  String s;
-  int i = 1;
-
-  s = args[0];
-
-  if (s != "")
-    while (args[i] != "")
-      s = s + token + args[i++];
-
-  return s;
-}
-
-/*
- * isValidNumber - check if a string is a valid number
- *
- * IMPORTANTE: es necesario mejorar el orden en el que aparecen los caracteres especiales
- * e incluir la verificacion de reales con e
- *
- * thanks to "hbx2013"
- *
- * retrieved from: http://forum.arduino.cc/index.php?topic=209407.0
- */
-boolean isValidNumber(String str) {
-  boolean isNum = false;
-  for (byte i = 0; i < str.length(); i++)
-  {
-    isNum = isDigit(str.charAt(i)) || str.charAt(i) == '+' || str.charAt(i) == '.' || str.charAt(i) == '-';
-    if (!isNum) return false;
-  }
-  return isNum;
-}
-
-/*
- * setBoolVar - set/get the value of an boolean variable
- */
-int setBoolVar (boolean *b, String cmd) {
-  int errorCode = 0;
-
-  if (cmd == "?")
-    Serial.println(BOOL_TO_STRING(*b));
-  else if (cmd == NULL)
-    *b = !*b;
-  else if (cmd == "ON")
-    *b = true;
-  else if (cmd == "OFF")
-    *b = false;
-  else
-    errorCode = -1;
-
-  return errorCode;
-}
-
 
