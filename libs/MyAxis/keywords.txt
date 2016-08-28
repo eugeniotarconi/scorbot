@@ -9,14 +9,14 @@
 #######################################
 #	Methods	and	Functions	(KEYWORD2)
 ####################################### 
-MySerial KEYWORD2	error output
+MyAxis KEYWORD2	error output
 parseString	KEYWORD2	warning output
 
 
 #######################################
 #	Instances	(KEYWORD2)
 #######################################
-MySerial	KEYWORD2	MySerial library
+MyAxis	KEYWORD2	MySerial library
 
 #######################################
 #	Constants	(LITERAL1)

@@ -10,6 +10,24 @@
 #define config_h
 #include"Arduino.h"
 
+// INCLUDE LIBRARIES C/C++
+#include <StandardCplusplus.h>
+#include <serstream>
+#include <string>
+#include <vector>
+#include <iterator>
+#include <Wire.h>
+// My libraries
+#include <Logging.h>
+#include <MySerial.h>
+#include <MyI2C.h>
+#include <MyAxis.h>
+
+using namespace std;
+// librerias de standarcpluplus no utilizadas
+//#include <system_configuration.h>
+//#include <unwind-cxx.h>
+//#include <utility.h>
 // MACROS
 #define limit(x,minimum,maximum) (min(max(x,minimum),maximum))
 
@@ -17,7 +35,6 @@
 
 // CONSTANTS
 #define FIRMWARE_VERSION "scorbot_arduino_0_8 2016.06.18"
-#define MAX_ARGS  10
 
 // DIGIAL INPUTS
 #define phaseAPin  2 // external interrupt #0 for encoder phase A signal
@@ -30,6 +47,12 @@ boolean homeValue = false;
 #define brakePin    6 // brake output for motor driver (LMD18200 - H-Bridge)
 #define dirPin      7 // direction output for motor driver (LMD18200 - H-Bridge)
 #define homeLedPin 13 // led for display home state
+
+
+bool        iAmMaster  = true;
+
+
+
 boolean brakeValue = true;
 boolean dirValue = false;
 int motorValue = 0;
@@ -84,10 +107,9 @@ float kp = 2;            // proportional gain
 float ki = 0.5;          // integral gain
 float kd = 0.1;          // derivative gain  
 
+
 // serial communication variables
-String inputString = "";         // a string to hold incoming data
-String token = " ";              // token for separate arguments
-boolean stringComplete = false;  // whether the string is complete
+char token = ' ';              // token for separate arguments
 boolean verboseMode = true;
 boolean echoMode = true;
 
