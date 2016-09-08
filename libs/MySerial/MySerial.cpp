@@ -5,47 +5,58 @@
 
 #include "MySerial.h"
 
-/** isStringComplete
-* 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
-*/
+
+/** Default constructor*/
 MySerial::MySerial(long newSerialBaud, char newToken, short newMAX_ARGS){	
-    // Set the obtained variables
-	serialBaud          = newSerialBaud;    
-	sentenceIsComplete  = false;
-	separatorToken      = newToken;
-	MAX_ARGS            = newMAX_ARGS;
-	// set default variables
-	inputSentence       = "";
+
+// Sentence variables	
+	inputSentence       = "";        // a string to hold incoming data
+	sentenceIsComplete  = false;   // whether the string is complete
+	separatorToken      = newToken;       // token for separate arguments
 	endOfSentence 		= '\n';
-	numberOfOrders 		= 0;
+	//vector<string> sentenceComponents; 
+// orders variables
+	//vector<Order>  orders;
+	fetchOrderTurn 		= 0;
+// Serial communication variables	
+    serialBaud          = newSerialBaud;  
+	SERIAL_BUFFER_SIZE  = 63;
+	MAX_ARGS            = newMAX_ARGS; 	
 	
-	// Start the serial process
-	Serial.begin(serialBaud);	
+	// pasar esta acción al método init()
+	Serial.begin(serialBaud);		
 }
 
-/** isStringComplete
-* 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
-*/
+/** return the sentence components*/
 vector<string>  MySerial::getSentenceComponents(){
 	return this->sentenceComponents;
 }
 
-/** isStringComplete
+/** return the sentence components*/
+string MySerial::getInputSentence(){
+	return this->inputSentence;
+};
+
+/** parse the input sentence in components
 * 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
+*  Devuelve el numero de componentes que tiene la Sentencia
+*
+*  Mejoras propuestas:
+*---
+*  Hay que ponerlo a prueba de sentencias con varios espacios en blanco seguidos
+*  O sentencias que sean enteras en blanco
+*  hay que decidir si se excede el numero de componenetes permitidos que ocurre con los
+*  componentes que se habían conseguido, si se borran o se quedan
 */
 int MySerial::parseSentence(){
 	// count if the string is bigger than MAX_ARGS
 	int numberOfSentenceComponents = 0; 
 	string sentenceComponent;
 	stringstream ssInputSentence(this->inputSentence);		
-	
 	while(getline(ssInputSentence,sentenceComponent,separatorToken) && sentenceComponent.size() > 0){
 		sentenceComponents.push_back(sentenceComponent);
 		numberOfSentenceComponents++;
-		if(numberOfSentenceComponents>MAX_ARGS){
+		if(numberOfSentenceComponents>(this->MAX_ARGS -1) ){
 			return -1;
 		}
 	}      
@@ -53,13 +64,15 @@ int MySerial::parseSentence(){
 	return numberOfSentenceComponents;
 };
 
-/** isStringComplete
+/** parse the input sentence in orders
 * 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
+*  
 */
-vector<MySerial::order> MySerial::parseSentenceByOrders(){
-	
-	return orders;
+int MySerial::parseSentenceByOrders(){
+	// count if the string is bigger than MAX_ARGS
+	int numberOfOrders = 0; 
+	// Deberá utilizar parseSentence y filtrar todos los components para crear las ordenes	
+	return numberOfOrders;
 };
 
 /** mySerialEvent 
@@ -67,25 +80,25 @@ vector<MySerial::order> MySerial::parseSentenceByOrders(){
 * si el caracter que llega no es  \n añade a inputString y lo considera
 * una misma entidad
 */
-void MySerial::mySerialEvent(){
+bool MySerial::mySerialEvent(){
 	
-	while (Serial.available()) {
-		// get the new byte:
+	bool serialError = false;
+	if(Serial.available()>=this->SERIAL_BUFFER_SIZE){
+	    serialError = true;
+	}
+	while (Serial.available()) {		
 		char inChar = (char)Serial.read();
-		// if the incoming character is a newline, set a flag
-		// so the main loop can do something about it:
-		if (inChar == endOfSentence)
-		  sentenceIsComplete = true;
+		if (inChar == endOfSentence){				
+            sentenceIsComplete = true;
+		}
 		else{
-		  // add it to the inputString:
-		  inputSentence += inChar;	  
-		}      
-  }
-  
-  //inputString.toUpperCase();
+		    inputSentence += toupper(inChar); 
+		}   		
+	}		
+	return serialError;
 }
 
-/** isStringComplete
+/** Get true if Sentence is Complete
 * 
 *  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
 */
@@ -93,12 +106,21 @@ bool MySerial::sentenceComplete(){
 	return sentenceIsComplete;
 }
 
-/** isStringComplete
+/** reset the Myserial status to get another sentence
 * 
 *  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
 */
 void MySerial::flushSentence(){
-	this->inputSentence.clear();
-	sentenceIsComplete = false;
+// Sentence variables
+	//this->inputSentence.clear();
+	inputSentence       = "";      		// Comprove if it is necesary
+	sentenceIsComplete  = false;   		// whether the string is complete
+	//separatorToken      = newToken;   // token for separate arguments
+	//endOfSentence 		= '\n';
 	sentenceComponents.clear();
+	//vector<string> sentenceComponents; 
+// orders variables
+	//vector<Order>  orders;
+	fetchOrderTurn 		= 0;		
+// Serial communication variables
 }

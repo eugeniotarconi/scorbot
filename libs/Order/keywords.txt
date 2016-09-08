@@ -9,20 +9,14 @@
 #######################################
 #	Methods	and	Functions	(KEYWORD2)
 ####################################### 
-MySerial KEYWORD2		error output
+Order KEYWORD2	error output
 parseString	KEYWORD2	warning output
-getSentenceComponents   error output
-getInputSentence		error output
-parseSentence			error output
-parseSentenceByOrders	error output
-mySerialEvent 			error output
-sentenceComplete		error output
-flushSentence			error output
+
 
 #######################################
 #	Instances	(KEYWORD2)
 #######################################
-MySerial	KEYWORD2	MySerial library
+Order	KEYWORD2	Order library
 
 #######################################
 #	Constants	(LITERAL1)

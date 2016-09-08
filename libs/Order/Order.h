@@ -1,5 +1,5 @@
-#ifndef MyI2C_h
-#define MyI2C_h
+#ifndef Order_h
+#define Order_h
 #include"Arduino.h"
 
 #include <StandardCplusplus.h>
@@ -9,20 +9,23 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+
 using namespace std;
 
-class MyI2C{
-	
-	struct order{
-	  int who;
-	  string cmd;
-	  string args;
-	}_order;
-	
+class Order{	
 	public:
-		MyI2C(){};	
-		~MyI2C(){}; 	
+	int who;
+	string cmd;
+	string args;	
+	Order(){
+		this->who = 0;
+		this->cmd = "";
+		this->args = "";
+	}
+	~Order(){};
 	private:
 	
 };
+
+
 #endif
