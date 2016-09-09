@@ -19,9 +19,10 @@ void loop() {
 /** 1- READ ALL DIGITAL INPUTS; ACTUAL STATE. ACTUAL IMAGE OF STATE MACHINE */  
 /** 2- IF has been recieved anything then procesed */
   if(mySerial.sentenceComplete()){            
-        mySerial.parseSentenceByComponents();   
-        mySerial.printSentenceComponents();   
-        mySerial.flushSentence();
+        mySerial.parseSentenceByOrders();   
+        mySerial.printSentenceComponents();
+        mySerial.printSentenceOrders();   
+        mySerial.flush();
   };
 /** 2- IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES (SEND ORDERS) ELSE: ?? */     
 /** 4- AXIS EXECUTE COMANDS */ 
@@ -41,7 +42,7 @@ void serialEvent(){
   serialError =  mySerial.mySerialEvent();
   if(serialError){
     Serial.println("\n\n\n ---> Error: exceed Serial buffer size \n\n");
-    mySerial.flushSentence();
+    mySerial.flush();
   }  
 }
 

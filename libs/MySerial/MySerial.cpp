@@ -57,17 +57,35 @@ bool MySerial::sentenceComplete(){
 /** Print sentence Components*/
 void MySerial::printSentenceComponents(){
 	Serial.print("\n\n Number of components:");
-	Serial.println(sentenceComponents.size());
-	for (int i=0; i<sentenceComponents.size();i++){
+	Serial.println(this->sentenceComponents.size());
+	for (int i=0; i<this->sentenceComponents.size();i++){
 		Serial.print("Component [");
 		Serial.print(i);
 		Serial.print("]:");
-		Serial.println(sentenceComponents[i].c_str());
+		Serial.println(this->sentenceComponents[i].c_str());
 		Serial.print("\n");
 	}
   
 }
 
+/** Print sentence Components*/
+void MySerial::printSentenceOrders(){
+	Serial.print("\n\n Number of orders:");
+	Serial.println(this->orders.size());
+	for (int i=0; i<this->orders.size();i++){
+		Serial.print("order [");
+		Serial.print(i);
+		Serial.println("]:");
+		Serial.print("who:");
+		Serial.println(this->orders[i].who);
+		Serial.print("cmd:");
+		Serial.println(this->orders[i].cmd.c_str());
+		Serial.print("args:");
+		Serial.println(this->orders[i].args.c_str());
+		Serial.print("\n");
+	}
+  
+}
 
 // --------------------      FUNCTIONALITIES     --------------------
 
@@ -125,6 +143,15 @@ int MySerial::parseSentenceByOrders(){
 		args[i-2]=sentenceComponents[i];
 	}	
 	
+	Order newOrder = Order();
+	for(int nOrder; nOrder<whos.size();nOrder++){
+		newOrder.who = atoi(whos[nOrder].c_str());
+		newOrder.cmd = cmd;
+		newOrder.args = args[nOrder];
+		this->orders.push_back(newOrder);	
+	}
+	
+	
 	// Deberá utilizar parseSentence y filtrar todos los components para crear las ordenes	
 	return whos.size();
 };
@@ -164,7 +191,7 @@ bool MySerial::mySerialEvent(){
 * 
 *  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
 */
-void MySerial::flushSentence(){
+void MySerial::flush(){
 // Sentence variables
 	//this->inputSentence.clear();
 	inputSentence       = "";      		// Comprove if it is necesary
@@ -174,7 +201,7 @@ void MySerial::flushSentence(){
 	sentenceComponents.clear();
 	//vector<string> sentenceComponents; 
 // orders variables
-	//vector<Order>  orders;
+	orders.clear();
 	fetchOrderTurn 		= 0;		
 // Serial communication variables
 }
@@ -192,3 +219,14 @@ int MySerial::parseTool(string stringToParse, char token, vector<string> &string
 	}   
 	return numberOfParts;
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -41,6 +41,8 @@ class MySerial{
 	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
 	void printSentenceComponents();
 	
+	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
+	void printSentenceOrders();
 	
 // --------------------      FUNCTIONALITIES     --------------------
 
@@ -60,7 +62,7 @@ class MySerial{
     bool mySerialEvent();
 	
 	/** STATUS:V  ||	CLEAR THE PREVIOUS SENTENCE TO GET ANOTHER ONE */
-	void flushSentence();
+	void flush();
 	
 	
 // --------------------    SUPPORT FUNCTIONS     --------------------	
