@@ -4,38 +4,33 @@
 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345
 ------------------------------------------------------------------------------------------------
 */
+
 // Configuration files
-#include "config.h"    
-// GLOBAL VARIABLES 
-short       debugMode  = LOG_LEVEL_NOOUTPUT;
-MyAxis      axis1      = MyAxis();
-MySerial    mySerial   = MySerial(SerialBaud,token,MaxSentenceComponents);// ponerle un init para ponerlo en setup
-MyI2C       myI2C      = MyI2C();  
-bool        serialError= false; 
+#include "config.h"  
+
 /**SETUP FUNCTION */
 void setup() {   
-      
+      mySerial.init();
 }
 
+/**LOOP FUNCTION */
 void loop() {    
-  int numberOfOrders=0;
-  int actualOrder=0;
-  int error = 0;
-
+  
 /** 1- READ ALL DIGITAL INPUTS; ACTUAL STATE. ACTUAL IMAGE OF STATE MACHINE */  
 /** 2- IF has been recieved anything then procesed */
   if(mySerial.sentenceComplete()){            
-      Serial.println(mySerial.getInputSentence().c_str());      
-      mySerial.flushSentence();
+        mySerial.parseSentenceByComponents();   
+        mySerial.printSentenceComponents();   
+        mySerial.flushSentence();
   };
-/** 2- IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES (SEND ORDERS) ELSE: ?? */ 
-  if(iAmMaster){}else{}      
+/** 2- IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES (SEND ORDERS) ELSE: ?? */     
 /** 4- AXIS EXECUTE COMANDS */ 
 /** 5- ALL THE LOG WILL BE SHOWN */  
 /** 6- UPDATE IMAGE VARIABLES OF STATE MACHINE  */ 
 /** 7- PREPARE FOR ANOTHER LOOP  */   
-  delay(1500);        
+  delay(2000);        
 }
+
 /*
 *------------------------------------------------------------------------------------------------
 *  OTHERS FUNCTIONS
@@ -47,8 +42,7 @@ void serialEvent(){
   if(serialError){
     Serial.println("\n\n\n ---> Error: exceed Serial buffer size \n\n");
     mySerial.flushSentence();
-  }
-  
+  }  
 }
 
 

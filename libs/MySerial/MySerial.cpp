@@ -24,8 +24,17 @@ MySerial::MySerial(long newSerialBaud, char newToken, short newMAX_ARGS){
 	MAX_ARGS            = newMAX_ARGS; 	
 	
 	// pasar esta acción al método init()
-	Serial.begin(serialBaud);		
+			
 }
+
+/** Default constructor*/
+void MySerial::init(){
+	Serial.begin(this->serialBaud);
+}
+
+
+// -------------------- SETTERS GETTERS & PRINTS --------------------
+
 
 /** return the sentence components*/
 vector<string>  MySerial::getSentenceComponents(){
@@ -36,6 +45,32 @@ vector<string>  MySerial::getSentenceComponents(){
 string MySerial::getInputSentence(){
 	return this->inputSentence;
 };
+
+/** Get true if Sentence is Complete
+* 
+*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
+*/
+bool MySerial::sentenceComplete(){
+	return sentenceIsComplete;
+}
+
+/** Print sentence Components*/
+void MySerial::printSentenceComponents(){
+	Serial.print("\n\n Number of components:");
+	Serial.println(sentenceComponents.size());
+	for (int i=0; i<sentenceComponents.size();i++){
+		Serial.print("Component [");
+		Serial.print(i);
+		Serial.print("]:");
+		Serial.println(sentenceComponents[i].c_str());
+		Serial.print("\n");
+	}
+  
+}
+
+
+// --------------------      FUNCTIONALITIES     --------------------
+
 
 /** parse the input sentence in components
 * 
@@ -48,7 +83,15 @@ string MySerial::getInputSentence(){
 *  hay que decidir si se excede el numero de componenetes permitidos que ocurre con los
 *  componentes que se habían conseguido, si se borran o se quedan
 */
-int MySerial::parseSentence(){
+int MySerial::parseSentenceByComponents(){
+	int numberOfSentenceComponents = parseTool(this->inputSentence,this->separatorToken,this->sentenceComponents);
+	if(numberOfSentenceComponents>(this->MAX_ARGS -1) ){
+			return -1;
+	}
+	else{
+		return numberOfSentenceComponents;
+	}
+	/*
 	// count if the string is bigger than MAX_ARGS
 	int numberOfSentenceComponents = 0; 
 	string sentenceComponent;
@@ -59,9 +102,9 @@ int MySerial::parseSentence(){
 		if(numberOfSentenceComponents>(this->MAX_ARGS -1) ){
 			return -1;
 		}
-	}      
-	
+	}      	
 	return numberOfSentenceComponents;
+	*/
 };
 
 /** parse the input sentence in orders
@@ -69,10 +112,21 @@ int MySerial::parseSentence(){
 *  
 */
 int MySerial::parseSentenceByOrders(){
-	// count if the string is bigger than MAX_ARGS
-	int numberOfOrders = 0; 
+	
+	parseSentenceByComponents();
+	
+	vector<string> whos;
+	string cmd;
+	vector<string> args;
+	
+	parseTool(sentenceComponents[0],',',whos);
+	cmd = sentenceComponents[1];
+	for (int i=2; i<sentenceComponents.size();i++){
+		args[i-2]=sentenceComponents[i];
+	}	
+	
 	// Deberá utilizar parseSentence y filtrar todos los components para crear las ordenes	
-	return numberOfOrders;
+	return whos.size();
 };
 
 /** mySerialEvent 
@@ -82,28 +136,28 @@ int MySerial::parseSentenceByOrders(){
 */
 bool MySerial::mySerialEvent(){
 	
+	//Serial.print("evento. Numero de caracteres = ");
+	//Serial.println(Serial.available());
+	
 	bool serialError = false;
 	if(Serial.available()>=this->SERIAL_BUFFER_SIZE){
 	    serialError = true;
 	}
 	while (Serial.available()) {		
 		char inChar = (char)Serial.read();
-		if (inChar == endOfSentence){				
+		if (inChar == '\n'){				
             sentenceIsComplete = true;
+			//Serial.println("\n Sentencia completa por NUEVA LINEA(\ N) ");
 		}
 		else{
 		    inputSentence += toupper(inChar); 
+			//Serial.print("\n car:");
+			//Serial.println(inChar);
 		}   		
-	}		
+	}	
+	//Serial.print("\n Sentencia final:");
+	//Serial.println(inputSentence.c_str());	
 	return serialError;
-}
-
-/** Get true if Sentence is Complete
-* 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
-*/
-bool MySerial::sentenceComplete(){
-	return sentenceIsComplete;
 }
 
 /** reset the Myserial status to get another sentence
@@ -123,4 +177,18 @@ void MySerial::flushSentence(){
 	//vector<Order>  orders;
 	fetchOrderTurn 		= 0;		
 // Serial communication variables
+}
+
+
+// --------------------    SUPPORT FUNCTIONS     --------------------
+
+int MySerial::parseTool(string stringToParse, char token, vector<string> &stringParsed){
+	int numberOfParts = 0; 
+	string part;
+	stringstream ssStringToParse(stringToParse);		
+	while(getline(ssStringToParse,part,token) && part.size() > 0){
+		stringParsed.push_back(part);
+		numberOfParts++;		
+	}   
+	return numberOfParts;
 }

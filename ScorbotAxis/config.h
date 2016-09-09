@@ -8,27 +8,21 @@
 
 #ifndef config_h
 #define config_h
-#include"Arduino.h"
 
-// INCLUDE LIBRARIES C/C++
-#include <StandardCplusplus.h>
-#include <serstream>
-#include <string>
-#include <vector>
-#include <iterator>
-#include <Wire.h>
-// My libraries
 #include <MySerial.h>
-#include <MyI2C.h>
-#include <MyAxis.h>
-#include "Order.h"
 
-using namespace std;
-bool        iAmMaster  = true;
-// serial communication variables
+
+
+// Serial communication variables
 char token = ' ';              // token for separate arguments
 int SerialBaud = 9600; 
 int MaxSentenceComponents = 10;
+
+
+/**  GLOBAL VARIABLES ------------------------------------------------------------------------*/
+MySerial    mySerial   = MySerial(SerialBaud,token,MaxSentenceComponents);
+bool        serialError= false; 
+
 
 
 #endif

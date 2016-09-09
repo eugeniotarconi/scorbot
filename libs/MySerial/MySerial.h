@@ -18,32 +18,38 @@ using namespace std;
 class MySerial{
 	
   public:
+  
   	/** STATUS:V  ||	DEFAULT CONSTRUCTOR */
     MySerial(long baud, char token, short MAX_ARGS);
+	
+	/** STATUS:V  ||	INIT THE SERIAL COMMUNICATION */
+	void init();
 
+	
+// -------------------- SETTERS GETTERS & PRINTS --------------------
+	
+	
 	/** STATUS:V  ||	GET COMPONENTS OF AN INPUT SENTENCE. OBTAINED BY SERIAL PORT */
 	vector<string> getSentenceComponents();
 	
 	/** STATUS:V  ||	GET THE INPUT SENTENCE */
 	string getInputSentence();
 	
+	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
+	bool sentenceComplete();
+	
+	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
+	void printSentenceComponents();
+	
+	
+// --------------------      FUNCTIONALITIES     --------------------
+
+	
 	/** STATUS:IC ||	PARSE THE INPTUT SENTENCE TO GET THE COMPONENTS */
-    int parseSentence();
+    int parseSentenceByComponents();
 	
 	/** STATUS:IC ||	PARSE THE INPUT SENTENCE BY ORDERS */
     int	parseSentenceByOrders();
-	
-	/** STATUS:IC ||	GET ORDERS*/
-	vector<Order> getOrders(){
-		return this->orders;
-	};
-	
-	/** STATUS:IC ||	FETCH ORDER: GET NEXT ORDER IN VECTOR */
-	Order fetchOrder(){
-		Order fechedOrder = this->orders[fetchOrderTurn];
-		this->fetchOrderTurn++;
-		return fechedOrder;		
-	};
 	
 	/** STATUS:V  ||	PROCEDURE TO SERIAL EVENT ARDUINO'S DEFAULT FUNCTION 
 	*	 hay que meter el log en la clase serial y terminar de probar los errores
@@ -53,17 +59,20 @@ class MySerial{
 	*/	
     bool mySerialEvent();
 	
-	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
-	bool sentenceComplete();
-	
 	/** STATUS:V  ||	CLEAR THE PREVIOUS SENTENCE TO GET ANOTHER ONE */
 	void flushSentence();
+	
+	
+// --------------------    SUPPORT FUNCTIONS     --------------------	
+
+	int parseTool(string stringToParse, char token, vector<string> &stringParsed);
 	
 	/** STATUS:V  ||	DEFAULT DESTRUCTOR */
     ~MySerial(){}; 
 	
 	
   private:
+	
 	// Sentence variables
 		string         inputSentence;        // a string to hold incoming data
 		boolean        sentenceIsComplete;   // whether the string is complete
