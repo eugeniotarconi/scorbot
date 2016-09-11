@@ -22,8 +22,6 @@ MySerial::MySerial(long newSerialBaud, char newToken, short newMAX_ARGS){
     serialBaud          = newSerialBaud;  
 	SERIAL_BUFFER_SIZE  = 63;
 	MAX_ARGS            = newMAX_ARGS; 	
-	
-	// pasar esta acción al método init()
 			
 }
 
@@ -76,16 +74,26 @@ void MySerial::printSentenceOrders(){
 		Serial.print("order [");
 		Serial.print(i);
 		Serial.println("]:");
-		Serial.print("who:");
-		Serial.println(this->orders[i].who);
+		Serial.print("cmd Type:");
+		Serial.println(this->orders[i].cmdType.c_str());
 		Serial.print("cmd:");
 		Serial.println(this->orders[i].cmd.c_str());
+		Serial.print("who:");
+		Serial.println(this->orders[i].who);
 		Serial.print("args:");
 		Serial.println(this->orders[i].args.c_str());
 		Serial.print("\n");
 	}
   
 }
+
+/** parse an return the sentence's orders*/
+vector<Order> MySerial::getOrders(){
+	this->parseSentenceByOrders();
+	
+	return this->orders;
+}
+
 
 // --------------------      FUNCTIONALITIES     --------------------
 
@@ -109,20 +117,6 @@ int MySerial::parseSentenceByComponents(){
 	else{
 		return numberOfSentenceComponents;
 	}
-	/*
-	// count if the string is bigger than MAX_ARGS
-	int numberOfSentenceComponents = 0; 
-	string sentenceComponent;
-	stringstream ssInputSentence(this->inputSentence);		
-	while(getline(ssInputSentence,sentenceComponent,separatorToken) && sentenceComponent.size() > 0){
-		sentenceComponents.push_back(sentenceComponent);
-		numberOfSentenceComponents++;
-		if(numberOfSentenceComponents>(this->MAX_ARGS -1) ){
-			return -1;
-		}
-	}      	
-	return numberOfSentenceComponents;
-	*/
 };
 
 /** parse the input sentence in orders
@@ -131,29 +125,39 @@ int MySerial::parseSentenceByComponents(){
 */
 int MySerial::parseSentenceByOrders(){
 	
-	parseSentenceByComponents();
-	
+	int toReturn;
+	string cmdType;
 	vector<string> whos;
 	string cmd;
-	vector<string> args;
+	vector<string> args;	
 	
-	parseTool(sentenceComponents[0],',',whos);
+	// se divide la Sentence por components
+	parseSentenceByComponents();
+	
+	// primero se coge el tipo de comando
+	cmdType = sentenceComponents[0];
+	
+	// Segundo se coge el comando (Depurar cmd no es necesario). La clase axis sabrá si es correcto	
 	cmd = sentenceComponents[1];
+	
+	// Depurar los demás sentenceComponents... 	
 	for (int i=2; i<sentenceComponents.size();i++){
-		args[i-2]=sentenceComponents[i];
+		// si el comando es de clase axes el primer args son los whos
+		if(!strcmp(cmdType.c_str(),"AXES") && i == 2){ 
+			// Depurar sentenceComponents[2] if == all --> 
+			if(!strcmp(sentenceComponents[i].c_str(),"ALL")){		
+				sentenceComponents[i] = "0,1,2,3,4,5";
+			};
+			// TODO: habría que verificar que son números
+			parseTool(sentenceComponents[i],',',whos);
+		}else{
+			args.push_back(sentenceComponents[i]);
+		}					
 	}	
 	
-	Order newOrder = Order();
-	for(int nOrder; nOrder<whos.size();nOrder++){
-		newOrder.who = atoi(whos[nOrder].c_str());
-		newOrder.cmd = cmd;
-		newOrder.args = args[nOrder];
-		this->orders.push_back(newOrder);	
-	}
-	
-	
-	// Deberá utilizar parseSentence y filtrar todos los components para crear las ordenes	
-	return whos.size();
+	toReturn = this->fillOrders(cmdType,cmd,whos,args);
+
+	return toReturn;
 };
 
 /** mySerialEvent 
@@ -209,6 +213,7 @@ void MySerial::flush(){
 
 // --------------------    SUPPORT FUNCTIONS     --------------------
 
+
 int MySerial::parseTool(string stringToParse, char token, vector<string> &stringParsed){
 	int numberOfParts = 0; 
 	string part;
@@ -222,8 +227,46 @@ int MySerial::parseTool(string stringToParse, char token, vector<string> &string
 
 
 
+// --------------------     PRIVATE METHODS      --------------------
 
 
+int MySerial::fillOrders(string cmdType, string cmd, vector<string> whos, vector<string> args){
+	int toReturn = -1;
+	Order newOrder = Order();
+	switch( newOrder.recognizeCmdType(cmdType) ){		
+		case Order::CMD_TYPE::AXES:
+			// Verificar si hay el mismo numero args que de whos?
+			if(whos.size() == args.size()){
+				// Se rellena la variable orders de la clase.
+				
+				for(int nOrder; nOrder<whos.size();nOrder++){
+					newOrder.cmdType = cmdType;
+					newOrder.cmd = cmd;
+					newOrder.who = atoi(whos[nOrder].c_str());					
+					newOrder.args = args[nOrder];
+					this->orders.push_back(newOrder);	
+				}	
+				toReturn = whos.size();
+			}else{
+				Serial.println("\n Missing arguments ");
+				toReturn = -1;
+			}	
+		break;
+		case Order::CMD_TYPE::ARD:
+			newOrder.cmdType = cmdType;
+			newOrder.cmd = cmd;
+			newOrder.who = -1;					
+			newOrder.args = args[0];
+			this->orders.push_back(newOrder);
+			toReturn = orders.size();
+		break;
+		default:
+			Serial.print("cmdType default fail");
+			toReturn = -1;
+		break;
+	}		
+	return toReturn;
+}
 
 
 

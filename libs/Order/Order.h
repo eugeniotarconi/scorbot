@@ -14,17 +14,39 @@ using namespace std;
 
 class Order{	
 	public:
-	int who;
-	string cmd;
-	string args;	
-	Order(){
-		this->who = 0;
-		this->cmd = "";
-		this->args = "";
-	}
-	~Order(){};
+		string cmdType;
+		int    who;
+		string cmd;
+		string args;		
+		enum    CMD_TYPE {AXES=1,ARD,NO_RECONIZED_CMD_TYPE};
+		enum    ARG_TYPE {ALL=1,NO_RECONIZED_ARGS_TYPE};
+		
+		/** STATUS:V  ||	DEFAULT CONSTRUCTOR */
+		Order();
+		
+		/** STATUS:V  ||	DEFAULT DESTRUCTOR */
+		~Order(){};
+		
+		
+		// -------------------- SETTERS GETTERS & PRINTS --------------------
+		
+		
+		// --------------------      FUNCTIONALITIES     --------------------
+		
+		/** STATUS:IC ||	 */
+		Order::CMD_TYPE recognizeCmdType(string Word);
+		
+		/** STATUS:IC ||	 */
+		Order::ARG_TYPE recognizeArgType(string Word);
+		
+		
+		// --------------------    SUPPORT FUNCTIONS     --------------------
+		
+		
 	private:
-	
+		
+		
+		// --------------------     PRIVATE METHODS      --------------------
 };
 
 

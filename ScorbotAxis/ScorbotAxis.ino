@@ -15,19 +15,29 @@ void setup() {
 
 /**LOOP FUNCTION */
 void loop() {    
-  
-/** 1- READ ALL DIGITAL INPUTS; ACTUAL STATE. ACTUAL IMAGE OF STATE MACHINE */  
-/** 2- IF has been recieved anything then procesed */
-  if(mySerial.sentenceComplete()){            
-        mySerial.parseSentenceByOrders();   
-        mySerial.printSentenceComponents();
-        mySerial.printSentenceOrders();   
-        mySerial.flush();
-  };
-/** 2- IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES (SEND ORDERS) ELSE: ?? */     
-/** 4- AXIS EXECUTE COMANDS */ 
+  vector<Order> orders;
+/** 1- READ ALL DIGITAL INPUTS; ACTUAL STATE. ACTUAL IMAGE OF STATE MACHINE */    
+/** 2- IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES (SEND ORDERS) ELSE: ?? */  
+  if(iAmMaster){
+    // check the serial port and process
+    if(mySerial.sentenceComplete()){            
+      orders = mySerial.getOrders();    
+      //mySerial.printSentenceComponents();
+      mySerial.printSentenceOrders();  
+      mySerial.flush();
+    };     
+    // send by I2C information
+      // check whos and if one order is to an axis that no owned, then sends to another arduino      
+  }else{
+     // check I2C entry communications
+     // orders = myI2C.getOrders();
+  } 
+/** 4- EXECUTE COMANDS: TYPE? ARD OR AXES*/ 
+
 /** 5- ALL THE LOG WILL BE SHOWN */  
-/** 6- UPDATE IMAGE VARIABLES OF STATE MACHINE  */ 
+
+/** 6- UPDATE IMAGE VARIABLES OF STATE MACHINE  */
+
 /** 7- PREPARE FOR ANOTHER LOOP  */   
   delay(2000);        
 }

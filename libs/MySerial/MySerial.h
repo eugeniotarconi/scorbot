@@ -25,6 +25,8 @@ class MySerial{
 	/** STATUS:V  ||	INIT THE SERIAL COMMUNICATION */
 	void init();
 
+	/** STATUS:V  ||	DEFAULT DESTRUCTOR */
+    ~MySerial(){}; 
 	
 // -------------------- SETTERS GETTERS & PRINTS --------------------
 	
@@ -35,14 +37,18 @@ class MySerial{
 	/** STATUS:V  ||	GET THE INPUT SENTENCE */
 	string getInputSentence();
 	
-	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
+	/** STATUS:V ||	CHECK IF SENTENCE IS COMPLETE */
 	bool sentenceComplete();
 	
-	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
+	/** STATUS:V ||	Show by console the actual sentence components */
 	void printSentenceComponents();
 	
-	/** STATUS:IC ||	CHECK IF SENTENCE IS COMPLETE */
+	/** STATUS:V ||	Show by console the actual orders */
 	void printSentenceOrders();
+	
+	/** STATUS:V || Parse sentence by orders and return these orders */
+	vector<Order> MySerial::getOrders();
+	
 	
 // --------------------      FUNCTIONALITIES     --------------------
 
@@ -66,12 +72,10 @@ class MySerial{
 	
 	
 // --------------------    SUPPORT FUNCTIONS     --------------------	
-
-	int parseTool(string stringToParse, char token, vector<string> &stringParsed);
+	
 	
 	/** STATUS:V  ||	DEFAULT DESTRUCTOR */
-    ~MySerial(){}; 
-	
+	int parseTool(string stringToParse, char token, vector<string> &stringParsed);
 	
   private:
 	
@@ -87,7 +91,15 @@ class MySerial{
 	// Serial communication variables	
 		long           serialBaud;
 		short 		   SERIAL_BUFFER_SIZE;
-		short          MAX_ARGS;             
+		short          MAX_ARGS;    
+		
+		
+	// --------------------     PRIVATE METHODS      --------------------
+	
+		int fillOrders(string cmdType, string cmd, vector<string> whos, vector<string> args);
+		
+		
+		
 };
 
 
