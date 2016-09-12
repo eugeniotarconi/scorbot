@@ -13,18 +13,22 @@
 
 #include <Order.h>
 #include <MySerial.h>
-#include <MyAxis.h>
+#include <MyArduino.h>
 
 // Serial communication variables
-char token = ' ';              // token for separate arguments
-int SerialBaud = 9600; 
-int MaxSentenceComponents = 10;
+char    token                 = ' ';              // token for separate arguments
+int     SerialBaud            = 9600; 
+int     MaxSentenceComponents = 10;
 
 /**  GLOBAL VARIABLES ------------------------------------------------------------------------*/
-bool        iAmMaster    = true;
-MySerial    mySerial     = MySerial(SerialBaud,token,MaxSentenceComponents);
-MyAxis      axis0        = MyAxis();
-bool        serialError  = false; 
+
+bool          iAmMaster    = true;
+vector<int>   axisId;
+MySerial      mySerial     = MySerial(SerialBaud,token,MaxSentenceComponents);
+MyArduino     myArduino    = MyArduino();
+vector<Order> orders;
+vector<Order> orders2Slaves;
+bool          serialError  = false; 
 
 
 

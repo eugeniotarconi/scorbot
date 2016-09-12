@@ -78,26 +78,30 @@ class MySerial{
 	int parseTool(string stringToParse, char token, vector<string> &stringParsed);
 	
   private:
+  
+// Sentence variables
+	string         inputSentence;        // a string to hold incoming data
+	boolean        sentenceIsComplete;   // whether the string is complete
+	char           separatorToken;       // token for separate arguments
+	char           endOfSentence;
+	vector<string> sentenceComponents; 
+// orders variables
+	vector<Order>  orders;
+	int			   fetchOrderTurn;
+// Serial communication variables	
+	long           serialBaud;
+	short 		   SERIAL_BUFFER_SIZE;
+	short          MAX_ARGS;    
 	
-	// Sentence variables
-		string         inputSentence;        // a string to hold incoming data
-		boolean        sentenceIsComplete;   // whether the string is complete
-		char           separatorToken;       // token for separate arguments
-		char           endOfSentence;
-		vector<string> sentenceComponents; 
-	// orders variables
-		vector<Order>  orders;
-		int			   fetchOrderTurn;
-	// Serial communication variables	
-		long           serialBaud;
-		short 		   SERIAL_BUFFER_SIZE;
-		short          MAX_ARGS;    
-		
-		
-	// --------------------     PRIVATE METHODS      --------------------
 	
-		int fillOrders(string cmdType, string cmd, vector<string> whos, vector<string> args);
-		
+// --------------------     PRIVATE METHODS      --------------------
+	
+	
+	/** STATUS:IC ||	PARSE THE INPUT SENTENCE BY ORDERS */
+	int fillOrders(string cmdType, string cmd, vector<string> whos, vector<string> args);
+	
+	/** STATUS:IC ||	PARSE THE INPUT SENTENCE BY ORDERS */
+	bool verifyWhos(vector<string> whos, vector<int> &whosInt);
 		
 		
 };

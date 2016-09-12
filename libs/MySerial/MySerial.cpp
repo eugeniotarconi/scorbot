@@ -149,7 +149,7 @@ int MySerial::parseSentenceByOrders(){
 				sentenceComponents[i] = "0,1,2,3,4,5";
 			};
 			// TODO: habría que verificar que son números
-			parseTool(sentenceComponents[i],',',whos);
+			this->parseTool(sentenceComponents[i],',',whos);
 		}else{
 			args.push_back(sentenceComponents[i]);
 		}					
@@ -232,25 +232,30 @@ int MySerial::parseTool(string stringToParse, char token, vector<string> &string
 
 int MySerial::fillOrders(string cmdType, string cmd, vector<string> whos, vector<string> args){
 	int toReturn = -1;
+	vector<int> whosInt;
+	
 	Order newOrder = Order();
 	switch( newOrder.recognizeCmdType(cmdType) ){		
-		case Order::CMD_TYPE::AXES:
+		case Order::CMD_TYPE::AXES:		
+			// verificar que los whos son numeros validos
+			if(!this->verifyWhos(whos,whosInt)){
+				Serial.println("Some who param is not a number or not valid");
+				return toReturn;
+			};
 			// Verificar si hay el mismo numero args que de whos?
-			if(whos.size() == args.size()){
-				// Se rellena la variable orders de la clase.
-				
-				for(int nOrder; nOrder<whos.size();nOrder++){
-					newOrder.cmdType = cmdType;
-					newOrder.cmd = cmd;
-					newOrder.who = atoi(whos[nOrder].c_str());					
-					newOrder.args = args[nOrder];
-					this->orders.push_back(newOrder);	
-				}	
-				toReturn = whos.size();
-			}else{
-				Serial.println("\n Missing arguments ");
-				toReturn = -1;
+			if(whos.size() != args.size()){		
+				Serial.println("\n Missing arguments in axes command: less args than axes ");
+				return toReturn;
+			};
+			// Se rellena la variable orders de la clase.				
+			for(int nOrder; nOrder<whos.size();nOrder++){
+				newOrder.cmdType = cmdType;
+				newOrder.cmd = cmd;
+				newOrder.who = whosInt[nOrder];					
+				newOrder.args = args[nOrder];
+				this->orders.push_back(newOrder);	
 			}	
+			toReturn = whos.size();
 		break;
 		case Order::CMD_TYPE::ARD:
 			newOrder.cmdType = cmdType;
@@ -265,11 +270,30 @@ int MySerial::fillOrders(string cmdType, string cmd, vector<string> whos, vector
 			toReturn = -1;
 		break;
 	}		
+		
 	return toReturn;
 }
 
 
-
+bool MySerial::verifyWhos(vector<string> whos,vector<int> &whosInt){
+	
+	bool areValid = false;
+	char *end;
+	for(int nOrder=0; nOrder<whos.size();nOrder++){
+		whosInt[nOrder]  = strtol(whos[nOrder].c_str(),&end,10);
+		if (!*end){
+			//Serial.print("\n SI:");
+			//Serial.println(whosInt[nOrder]);
+			areValid = true;
+		}
+		else{
+			//Serial.print("\n NO:");
+			//Serial.println(end);
+			return areValid = false;
+		}		
+	}
+	return areValid;
+}
 
 
 
