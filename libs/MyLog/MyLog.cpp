@@ -1,12 +1,12 @@
-#include "Logging.h"
+#include "MyLog.h"
 
-void Logging::Init(int level, long baud){
+void MyLog::Init(int level, long baud){
     _level = constrain(level,LOG_LEVEL_NOOUTPUT,LOG_LEVEL_VERBOSE);
     _baud = baud;
     Serial.begin(_baud);
 }
 
-void Logging::Error(const char* msg, ...){
+void MyLog::Error(const char* msg, ...){
     if (LOG_LEVEL_ERRORS <= _level) {   
 		print ("ERROR: ",0);
         va_list args;
@@ -16,7 +16,7 @@ void Logging::Error(const char* msg, ...){
 }
 
 
-void Logging::Info(const char* msg, ...){
+void MyLog::Info(const char* msg, ...){
     if (LOG_LEVEL_INFOS <= _level) {
         va_list args;
         va_start(args, msg);
@@ -24,7 +24,7 @@ void Logging::Info(const char* msg, ...){
     }
 }
 
-void Logging::Debug(const char* msg, ...){
+void MyLog::Debug(const char* msg, ...){
     if (LOG_LEVEL_DEBUG <= _level) {
         va_list args;
         va_start(args, msg);
@@ -33,7 +33,7 @@ void Logging::Debug(const char* msg, ...){
 }
 
 
-void Logging::Verbose(const char* msg, ...){
+void MyLog::Verbose(const char* msg, ...){
     if (LOG_LEVEL_VERBOSE <= _level) {
         va_list args;
         va_start(args, msg);
@@ -43,7 +43,7 @@ void Logging::Verbose(const char* msg, ...){
 
 
 
- void Logging::print(const char *format, va_list args) {
+ void MyLog::print(const char *format, va_list args) {
     //
     // loop through format string
     for (; *format != 0; ++format) {
@@ -114,7 +114,7 @@ void Logging::Verbose(const char* msg, ...){
     }
  }
  
-// Logging Log = Logging();
+// MyLog Log = MyLog();
 
  
  

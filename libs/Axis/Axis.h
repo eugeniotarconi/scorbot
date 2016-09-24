@@ -28,6 +28,14 @@ class Axis{
 		
 		
 // -------------------- SETTERS GETTERS & PRINTS --------------------
+
+
+void setId(short newId);
+
+short getId();
+
+void setBrakePin(short newBrakePin);
+
 // --------------------      FUNCTIONALITIES     --------------------
 
 
@@ -35,9 +43,14 @@ class Axis{
 int processOrder(Order newOrder);
 
 
+void brake(Order::ARG brakeMode);
+
 // --------------------    SUPPORT FUNCTIONS     --------------------
 	private:
+		short id;
+		short brakePin;
+		
 // --------------------     PRIVATE METHODS      --------------------
-
+bool str2Int(string toConvert,int &converted);
 };
 #endif

@@ -22,12 +22,16 @@ MyArduino::MyArduino( vector<int> axisId ){
 /** CONSTRUCTOR WITH AXES */
 void MyArduino::setAxes( vector<int> axisId ){
 	Serial.print("Este arduino ha sido creado con los ejes:\n");
+	Axis newAxis = Axis();
 	for (int i = 0; i < axisId.size() ; i++){
 		Serial.print("\t nuevo eje con ID:");
 		Serial.println(axisId[i]);
+		newAxis.setId(axisId[i]);
+		this->axes.push_back(newAxis);
 	}
 		
 }
+
 
 // --------------------     FUNCTIONALITIES      --------------------
 
@@ -37,28 +41,17 @@ void MyArduino::processOrders( vector<Order> orders2Process ){
   for(int nOrder=0; nOrder< orders2Process.size(); nOrder++){
     switch( orders2Process[nOrder].recognizeCmdType() ){    
       case Order::CMD_TYPE::AXES:  
-        switch(orders2Process[nOrder].who){
-			case 0:
-				Serial.println("\n Comando procesado por eje 0 ");
-				break;
-			case 1:
-				Serial.println("\n Comando procesado por eje 1 ");
-				break;
-			case 2:
-				Serial.println("\n Comando procesado por eje 2 ");
-				break;
-			default:
-				Serial.print("\n El eje: ");
-				Serial.print(orders2Process[nOrder].who);
-				Serial.println("\n Ese eje no existe");
-				break;
-        }
-      break;
+		if(this->checkIfAxisIsMine(orders2Process[nOrder].who)){
+			axes[orders2Process[nOrder].who].processOrder(orders2Process[nOrder]);
+		}else{
+			Serial.println("that Axis doesnt belong to me; filterMyOrders is neccesary");
+		}		
+		break;
       case Order::CMD_TYPE::ARD:       
         result = this->processOrder(orders2Process[0]);
         break;
       default:
-        Serial.print("Comando no válido");
+        Serial.print("Cmd Type no válido");
         break;
     }  
   }
@@ -75,7 +68,7 @@ int MyArduino::processOrder(Order newOrder){
 			resultOfProcessedOrder = 1;
 			break;		
 		default:
-			Serial.println("\n Comando desconocido:");
+			Serial.println("\n MyArduino: Comando Arduino desconocido:");
 			resultOfProcessedOrder = -1;
 			break;
 	}
@@ -104,7 +97,16 @@ vector<Order> MyArduino::filterMyOrders(vector<Order> &orders){
 }
 
 
+bool MyArduino::checkIfAxisIsMine(int who){
+	bool isMine = false;
+	for (int i = 0; i < axes.size() ; i++){
+		if(who == axes[i].getId()) 
+			isMine = true;
+	}
+	return isMine;
+}
 
 
 // --------------------    SUPPORT FUNCTIONS     --------------------
 // --------------------     PRIVATE METHODS      --------------------
+

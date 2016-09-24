@@ -21,6 +21,7 @@ class MyArduino{
 		/** STATUS:V  ||	DEFAULT CONSTRUCTOR */
 		MyArduino();	
 		
+		/** STATUS:IC  ||	CONSTRUCTOR SETTING AXES */
 		MyArduino( vector<int> axisId );
 		
 		/** STATUS:V  ||	DEFAULT DESTRUCTOR */
@@ -30,22 +31,29 @@ class MyArduino{
 		
 // -------------------- SETTERS GETTERS & PRINTS --------------------
 
+
 		/** STATUS:IC  ||	set axis istances with id axisId */
 		void setAxes( vector<int> axisId );
 
 
 // --------------------     FUNCTIONALITIES      --------------------
 
+
 		void processOrders( vector<Order> orders2Process );
 		int  processOrder( Order order );
 		void readStateMachine();
 		void updateStateMachine();
 		vector<Order> filterMyOrders( vector<Order> &orders );
-		
+		bool checkIfAxisIsMine(int who);
 
+		
 // --------------------    SUPPORT FUNCTIONS     --------------------
+
+
 	private:
-		vector<Axis> axis;
+		vector<Axis> axes;
+		
+		
 // --------------------     PRIVATE METHODS      --------------------
 
 };

@@ -38,14 +38,7 @@ Order::CMD_TYPE Order::recognizeCmdType(string CmdType){
 /** Pass a self string type to his enum value */
 Order::CMD_TYPE Order::recognizeCmdType(){
 	
-	Order::CMD_TYPE recognizedCmdType;
-	if(!strcmp(this->cmdType.c_str(),"AXES")){	
-		recognizedCmdType = AXES;
-	}else if(!strcmp(this->cmdType.c_str(),"ARD")){
-		recognizedCmdType = ARD;
-	}else{	
-		recognizedCmdType = NO_RECONIZED_CMD_TYPE;
-	} 
+	Order::CMD_TYPE recognizedCmdType = this->recognizeCmdType(this->cmdType);
 	return recognizedCmdType;
 	
 }
@@ -54,10 +47,12 @@ Order::CMD_TYPE Order::recognizeCmdType(){
 Order::CMD Order::recognizeCmd(string Cmd){
 	
 	Order::CMD recognizedCmd;
-	if(!strcmp(Cmd.c_str(),"BREAK")){	
-		recognizedCmd = BREAK;
+	if(!strcmp(Cmd.c_str(),"BRAKE")){	
+		recognizedCmd = BRAKE;
 	}else if(!strcmp(cmd.c_str(),"LOG_MODE")){	
 		recognizedCmd = LOG_MODE;
+	}else if(!strcmp(cmd.c_str(),"SET_BRAKE_PIN")){	
+		recognizedCmd = SET_BRAKE_PIN;
 	}
 	else{	
 		recognizedCmd = NO_RECONIZED_CMD;
@@ -67,33 +62,34 @@ Order::CMD Order::recognizeCmd(string Cmd){
 }
 
 /** Pass a self string type to his enum value */
-Order::CMD Order::recognizeCmd(){
-	
-	Order::CMD recognizedCmd;
-	if(!strcmp(this->cmd.c_str(),"BREAK")){	
-		recognizedCmd = BREAK;
-	}else if(!strcmp(cmd.c_str(),"LOG_MODE")){	
-		recognizedCmd = LOG_MODE;
-	}else{	
-		recognizedCmd = NO_RECONIZED_CMD;
-	} 
+Order::CMD Order::recognizeCmd(){	
+	Order::CMD recognizedCmd = this->recognizeCmd(this->cmd);
 	return recognizedCmd;
 	
 }
 
 
 /** New funtion */
-Order::ARG_TYPE Order::recognizeArgType(string ArgType){
+Order::ARG Order::recognizeArg(string Arg){
 		
-	Order::ARG_TYPE recognizedArgType;
-	if(!strcmp(ArgType.c_str(),"ALL")){	
-		recognizedArgType = ALL;
-	}else{	
-		recognizedArgType = NO_RECONIZED_ARGS_TYPE;
+	Order::ARG recognizedArg;
+	if(!strcmp(Arg.c_str(),"ALL")){	
+		recognizedArg = ALL;
+	}else if(!strcmp(Arg.c_str(),"ON")){
+		recognizedArg = ON;
+	}else if(!strcmp(Arg.c_str(),"OFF")){
+		recognizedArg = OFF;
+	}else{		
+		recognizedArg = NO_RECONIZED_ARG;
 	} 
-	return recognizedArgType;
+	return recognizedArg;
 	
 	
+}
+
+/** New funtion */
+Order::ARG Order::recognizeArg(){	
+	return this->recognizeArg(this->args);	
 }
 
 

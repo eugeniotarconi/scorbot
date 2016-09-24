@@ -14,9 +14,22 @@ using namespace std;
 
 class Order{	
 	public:
-		enum    CMD_TYPE {AXES=1,ARD,NO_RECONIZED_CMD_TYPE};
-		enum    CMD {BREAK=1,LOG_MODE,NO_RECONIZED_CMD};
-		enum    ARG_TYPE {ALL=1,NO_RECONIZED_ARGS_TYPE};
+		enum    CMD_TYPE {
+			AXES=1,
+			ARD,
+			NO_RECONIZED_CMD_TYPE};
+							
+		enum    CMD {
+			BRAKE=1,
+			SET_BRAKE_PIN,
+			LOG_MODE,
+			NO_RECONIZED_CMD=4};
+			
+		enum    ARG {
+			ALL=1,
+			ON,
+			OFF,
+			NO_RECONIZED_ARG};
 		
 		string cmdType;
 		int    who;
@@ -58,7 +71,10 @@ class Order{
 		Order::CMD recognizeCmd();
 		
 		/** STATUS:IC ||	 */
-		Order::ARG_TYPE recognizeArgType(string Word);
+		Order::ARG recognizeArg(string Word);
+		
+		/** STATUS:IC ||	 */
+		Order::ARG recognizeArg();
 		
 		// --------------------    SUPPORT FUNCTIONS     --------------------
 	private:

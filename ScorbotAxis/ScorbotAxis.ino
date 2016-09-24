@@ -33,7 +33,6 @@ void setup() {
 void loop() {  
 
 /** 1- READ ALL DIGITAL INPUTS; ACTUAL STATE. ACTUAL IMAGE OF STATE MACHINE */ 
-    myArduino.readStateMachine();
 /** 2- IF: CURRENT ARDUINO HAS BEEN SETED LIKE MASTER THEN EXECUTE THE MASTER ROUTINES (SEND ORDERS) ELSE: ?? */  
     if(iAmMaster){
         // check the serial port and process
@@ -56,7 +55,6 @@ void loop() {
 /** 5- ALL THE LOG WILL BE SHOWN */  
     //myArduino.reportMachineState(mySerial);//a través de MySerial imprime por puerto serie o por I2c el estado de la maquina
 /** 6- UPDATE IMAGE VARIABLES OF STATE MACHINE  */
-    myArduino.updateStateMachine();
 /** 7- PREPARE FOR ANOTHER LOOP  */   
     orders.clear();
     delay(2500);        

@@ -19,7 +19,7 @@ Init	KEYWORD2	initialiazing
 #######################################
 #	Instances	(KEYWORD2)
 #######################################
-Logging	KEYWORD2	Logging library
+MyLog	KEYWORD2	MyLog library
 
 #######################################
 #	Constants	(LITERAL1)
