@@ -14,6 +14,7 @@ using namespace std;
 
 class Order{	
 	public:
+	
 		enum    CMD_TYPE {
 			AXES=1,
 			ARD,
@@ -22,19 +23,25 @@ class Order{
 		enum    CMD {
 			BRAKE=1,
 			SET_BRAKE_PIN,
-			LOG_MODE,
+			LOG_MODE,			
 			NO_RECONIZED_CMD=4};
 			
 		enum    ARG {
 			ALL=1,
 			ON,
 			OFF,
+			NO_OUTPUT,
+			ERROR,
+			INFO,
+			DEBUG,
+			VERBOSE,
 			NO_RECONIZED_ARG};
 		
 		string cmdType;
 		int    who;
 		string cmd;
-		string args;		
+		string args;
+		vector<ARG> vectorArgs;
 		
 		/** STATUS:V  ||	DEFAULT CONSTRUCTOR */
 		Order();
@@ -42,9 +49,7 @@ class Order{
 		/** STATUS:V  ||	DEFAULT DESTRUCTOR */
 		~Order(){};
 		
-		
-		// -------------------- SETTERS GETTERS & PRINTS --------------------
-		// --------------------      FUNCTIONALITIES     --------------------
+		void setVectorArgs(vector<string> ParsedArgs);
 		
 		/** STATUS:IC || Recognize is a input string is a valid cmd type 	 
 		*
@@ -76,9 +81,10 @@ class Order{
 		/** STATUS:IC ||	 */
 		Order::ARG recognizeArg();
 		
-		// --------------------    SUPPORT FUNCTIONS     --------------------
+		void clear();
+
 	private:
-		// --------------------     PRIVATE METHODS      --------------------
+
 };
 
 

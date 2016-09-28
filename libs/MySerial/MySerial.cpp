@@ -5,124 +5,160 @@
 
 #include "MySerial.h"
 
+MySerial::MySerial(){}
 
-/** Default constructor*/
-MySerial::MySerial(long newSerialBaud, char newToken, short newMAX_ARGS){	
-
-// Sentence variables	
-	inputSentence       = "";        // a string to hold incoming data
-	sentenceIsComplete  = false;   // whether the string is complete
-	separatorToken      = newToken;       // token for separate arguments
-	endOfSentence 		= '\n';
-	//vector<string> sentenceComponents; 
-// orders variables
-	//vector<Order>  orders;
-	fetchOrderTurn 		= 0;
-// Serial communication variables	
-    serialBaud          = newSerialBaud;  
-	SERIAL_BUFFER_SIZE  = 63;
-	MAX_ARGS            = newMAX_ARGS; 	
-			
+MySerial::MySerial(long newSerialBaud, char newSeparaToken,Order newOrder, string newLogMode){	
+	// Sentence variables	
+		inputSentence       = "";        
+		sentenceCompleteFlag  = false;   
+		separatorToken      = newSeparaToken;       
+		endOfSentence 		= '\n';
+		//vector<string> sentenceComponents; 
+	// orders variables
+		order = newOrder;
+	// Serial communication variables	
+		serialBaud          = newSerialBaud;  
+		SERIAL_BUFFER_SIZE  = 63;
+		setLogMode(this->order.recognizeArg(newLogMode),Order::ARG::ON);
 }
 
-/** Default constructor*/
-void MySerial::init(){
-	Serial.begin(this->serialBaud);
+void MySerial::init(){	 
+    Serial.begin(this->serialBaud);
+	while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+	}
+}
+
+void MySerial::init(long newSerialBaud){	
+	serialBaud = newSerialBaud;
+    Serial.begin(this->serialBaud);
 }
 
 
-// -------------------- SETTERS GETTERS & PRINTS --------------------
+// --------------------      SETS      --------------------
 
+void MySerial::setLogMode(Order::ARG newLogMode, Order::ARG newStatus){
+	this->debug(CR"MySerial said: Mode to change:%d | new Status: %d "CR,newLogMode,newStatus);
+	int arrayPositionOfThisMode = getArrayPositionOfThisMode(newLogMode);
+	if(newStatus == Order::ARG::ON){
+		this->logMode[arrayPositionOfThisMode] = true;
+	}else{
+		this->logMode[arrayPositionOfThisMode] = false;
+	}
+		
+}
 
-/** return the sentence components*/
+// --------------------      GETS      --------------------
+
+int MySerial::getArrayPositionOfThisMode(Order::ARG mode){
+	int arrayPositionOfThisMode;
+	switch(mode){
+		case Order::ARG::NO_OUTPUT:
+			arrayPositionOfThisMode = 0;
+			break;	
+		case Order::ARG::ERROR:	
+			arrayPositionOfThisMode = 1;		
+			break;	
+		case Order::ARG::INFO:	
+			arrayPositionOfThisMode = 2;		
+			break;	
+		case Order::ARG::DEBUG:		
+			arrayPositionOfThisMode = 3;		
+					break;	
+		case Order::ARG::VERBOSE:	
+			arrayPositionOfThisMode = 4;		
+					break;					
+		default:			
+			this->error("\n MySerial said: setLogMode ARG newStatus unknown\n");
+		break;
+	}
+	return arrayPositionOfThisMode;
+}
+
 vector<string>  MySerial::getSentenceComponents(){
 	return this->sentenceComponents;
 }
 
-/** return the sentence components*/
 string MySerial::getInputSentence(){
 	return this->inputSentence;
 };
 
-/** Get true if Sentence is Complete
-* 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
-*/
-bool MySerial::sentenceComplete(){
-	return sentenceIsComplete;
+bool MySerial::getSentenceCompleteFlag(){
+	return sentenceCompleteFlag;
 }
 
-/** Print sentence Components*/
-void MySerial::printSentenceComponents(){
-	Serial.print("\n\n Number of components:");
-	Serial.println(this->sentenceComponents.size());
-	for (int i=0; i<this->sentenceComponents.size();i++){
-		Serial.print("Component [");
-		Serial.print(i);
-		Serial.print("]:");
-		Serial.println(this->sentenceComponents[i].c_str());
-		Serial.print("\n");
-	}
-  
-}
-
-/** Print sentence Components*/
-void MySerial::printSentenceOrders(){
-	Serial.print("\n\n Number of orders:");
-	Serial.println(this->orders.size());
-	for (int i=0; i<this->orders.size();i++){
-		Serial.print("order [");
-		Serial.print(i);
-		Serial.println("]:");
-		Serial.print("cmd Type:");
-		Serial.println(this->orders[i].cmdType.c_str());
-		Serial.print("cmd:");
-		Serial.println(this->orders[i].cmd.c_str());
-		Serial.print("who:");
-		Serial.println(this->orders[i].who);
-		Serial.print("args:");
-		Serial.println(this->orders[i].args.c_str());
-		Serial.print("\n");
-	}
-  
-}
-
-/** parse an return the sentence's orders*/
 vector<Order> MySerial::getOrders(){
+	// esto no debe ir aquí: debería haber un método que sea procces sentence
 	this->parseSentenceByOrders();
 	
 	return this->orders;
 }
 
+// --------------------      LOGS      --------------------
+
+void MySerial::logSentenceComponents(){
+	info("\n\n MySerial said:  Number of components:%d \n",this->sentenceComponents.size());
+	for (int i=0; i<this->sentenceComponents.size();i++){
+		info("Component [%d]: %s "CR,i,this->sentenceComponents[i].c_str());
+	}
+  
+}
+
+void MySerial::logSentenceOrders(){
+	info("\n\n Number of orders:%d",this->orders.size());
+	for (int i=0; i<this->orders.size();i++){
+		debug("\n order [%d]:"CR,i);
+		debug("\t cmd Type: %s"CR,this->orders[i].cmdType.c_str());		
+		debug("\t cmd: %s"CR,this->orders[i].cmd.c_str());
+		debug("\t who: %d"CR,this->orders[i].who);		
+		debug("\t args: %s "CR,this->orders[i].args.c_str());
+		for (int j=0; j<this->orders[i].vectorArgs.size();j++){
+			debug("\t arg[%d]: %d \n"CR,j,orders[i].vectorArgs[j]);
+		}
+	}  
+}
+
+void MySerial::error(const char* msg, ...){
+    if (shouldPrint(Order::ARG::ERROR)) {   
+		print ("\nERROR: ",0);
+        va_list args;
+        va_start(args, msg);
+        print(msg,args);
+    }
+}
+
+void MySerial::info(const char* msg, ...){
+    if (shouldPrint(Order::ARG::INFO)) {
+        va_list args;
+        va_start(args, msg);
+        print(msg,args);
+    }
+}
+
+void MySerial::debug(const char* msg, ...){
+    if (shouldPrint(Order::ARG::DEBUG)) {
+        va_list args;
+        va_start(args, msg);
+        print(msg,args);
+    }
+}
+
+void MySerial::verbose(const char* msg, ...){
+    if (shouldPrint(Order::ARG::VERBOSE)) {
+        va_list args;
+        va_start(args, msg);
+        print(msg,args);
+    }
+}
 
 // --------------------      FUNCTIONALITIES     --------------------
 
 
-/** parse the input sentence in components
-* 
-*  Devuelve el numero de componentes que tiene la Sentencia
-*
-*  Mejoras propuestas:
-*---
-*  Hay que ponerlo a prueba de sentencias con varios espacios en blanco seguidos
-*  O sentencias que sean enteras en blanco
-*  hay que decidir si se excede el numero de componenetes permitidos que ocurre con los
-*  componentes que se habían conseguido, si se borran o se quedan
-*/
 int MySerial::parseSentenceByComponents(){
 	int numberOfSentenceComponents = parseTool(this->inputSentence,this->separatorToken,this->sentenceComponents);
-	if(numberOfSentenceComponents>(this->MAX_ARGS -1) ){
-			return -1;
-	}
-	else{
-		return numberOfSentenceComponents;
-	}
+	return numberOfSentenceComponents;
 };
 
-/** parse the input sentence in orders
-* 
-*  
-*/
 int MySerial::parseSentenceByOrders(){
 	
 	int toReturn;
@@ -160,15 +196,9 @@ int MySerial::parseSentenceByOrders(){
 	return toReturn;
 };
 
-/** mySerialEvent 
-* esta función está pendiente de los eventos en el puerto serie
-* si el caracter que llega no es  \n añade a inputString y lo considera
-* una misma entidad
-*/
 bool MySerial::mySerialEvent(){
-	
-	//Serial.print("evento. Numero de caracteres = ");
-	//Serial.println(Serial.available());
+	debug(CR"-----------------------------------------------------------"CR);
+	debug(CR"MySerial said: New Serial Event, Number of bytes = %d"CR,Serial.available());
 	
 	bool serialError = false;
 	if(Serial.available()>=this->SERIAL_BUFFER_SIZE){
@@ -177,42 +207,33 @@ bool MySerial::mySerialEvent(){
 	while (Serial.available()) {		
 		char inChar = (char)Serial.read();
 		if (inChar == '\n'){				
-            sentenceIsComplete = true;
-			//Serial.println("\n Sentencia completa por NUEVA LINEA(\ N) ");
+            sentenceCompleteFlag = true;
+			debug("\n MySerial said: Sentence complete (end by \ N) ");
 		}
 		else{
 		    inputSentence += toupper(inChar); 
-			//Serial.print("\n car:");
-			//Serial.println(inChar);
+			//debug("\n MySerial said: char: %c",inChar);
 		}   		
 	}	
-	//Serial.print("\n Sentencia final:");
-	//Serial.println(inputSentence.c_str());	
+	debug("\n MySerial said: Final Sentence: %s",inputSentence.c_str());
 	return serialError;
 }
 
-/** reset the Myserial status to get another sentence
-* 
-*  Devuelve un booleano de si es verdadero que la cadena por puerto serie está completa
-*/
 void MySerial::flush(){
 // Sentence variables
 	//this->inputSentence.clear();
 	inputSentence       = "";      		// Comprove if it is necesary
-	sentenceIsComplete  = false;   		// whether the string is complete
+	sentenceCompleteFlag  = false;   		// whether the string is complete
 	//separatorToken      = newToken;   // token for separate arguments
 	//endOfSentence 		= '\n';
 	sentenceComponents.clear();
 	//vector<string> sentenceComponents; 
-// orders variables
-	orders.clear();
-	fetchOrderTurn 		= 0;		
+    order.clear();
+	orders.clear();	
 // Serial communication variables
 }
 
-
-// --------------------    SUPPORT FUNCTIONS     --------------------
-
+// --------------------     PRIVATE METHODS      --------------------
 
 int MySerial::parseTool(string stringToParse, char token, vector<string> &stringParsed){
 	int numberOfParts = 0; 
@@ -225,55 +246,57 @@ int MySerial::parseTool(string stringToParse, char token, vector<string> &string
 	return numberOfParts;
 }
 
-
-
-// --------------------     PRIVATE METHODS      --------------------
-
-
 int MySerial::fillOrders(string cmdType, string cmd, vector<string> whos, vector<string> args){
 	int toReturn = -1;
-	vector<int> whosInt;
+	vector<int> whosInt;	
+	vector<string> parsedArgs;
 	
-	Order newOrder = Order();
-	switch( newOrder.recognizeCmdType(cmdType) ){		
+	switch( this->order.recognizeCmdType(cmdType) ){		
 		case Order::CMD_TYPE::AXES:		
 			// verificar que los whos son numeros validos
 			if(!this->verifyWhos(whos,whosInt)){
-				Serial.println("Some who param is not a number or not valid");
+				error("\n MySerial said: Some who param is not a number or not valid");
 				return toReturn;
 			};
 			// Verificar si hay el mismo numero args que de whos?
 			if(whos.size() != args.size()){		
-				Serial.println("\n Missing arguments in axes command: less args than axes ");
+				error("\n MySerial said: Missing arguments in axes command: less args than axes ");
 				return toReturn;
 			};
 			// Se rellena la variable orders de la clase.				
 			for(int nOrder; nOrder<whos.size();nOrder++){
-				newOrder.cmdType = cmdType;
-				newOrder.cmd = cmd;
-				newOrder.who = whosInt[nOrder];					
-				newOrder.args = args[nOrder];
-				this->orders.push_back(newOrder);	
+				this->order.cmdType = cmdType;
+				this->order.cmd = cmd;
+				this->order.who = whosInt[nOrder];					
+				this->order.args = args[nOrder];
+				// fill vector<ARG> vectorArgs in Order
+				parseTool(this->order.args,',',parsedArgs);
+				this->order.setVectorArgs(parsedArgs);
+				
+				this->orders.push_back(this->order);	
 			}	
 			toReturn = whos.size();
 		break;
 		case Order::CMD_TYPE::ARD:
-			newOrder.cmdType = cmdType;
-			newOrder.cmd = cmd;
-			newOrder.who = -1;					
-			newOrder.args = args[0];
-			this->orders.push_back(newOrder);
+			this->order.cmdType = cmdType;
+			this->order.cmd = cmd;
+			this->order.who = -1;					
+			this->order.args = args[0];
+			// fill vector<ARG> vectorArgs in Order
+			parseTool(this->order.args,',',parsedArgs);
+			this->order.setVectorArgs(parsedArgs);		
+			
+			this->orders.push_back(this->order);
 			toReturn = orders.size();
 		break;
 		default:
-			Serial.print("cmdType default fail");
+			error(" MySerial said: cmdType default fail");
 			toReturn = -1;
 		break;
 	}		
 		
 	return toReturn;
 }
-
 
 bool MySerial::verifyWhos(vector<string> whos,vector<int> &whosInt){
 	
@@ -282,17 +305,93 @@ bool MySerial::verifyWhos(vector<string> whos,vector<int> &whosInt){
 	for(int nOrder=0; nOrder<whos.size();nOrder++){
 		whosInt[nOrder]  = strtol(whos[nOrder].c_str(),&end,10);
 		if (!*end){
-			//Serial.print("\n SI:");
-			//Serial.println(whosInt[nOrder]);
+			debug("\n MySerial said: valid who = %d",whosInt[nOrder]);
 			areValid = true;
 		}
 		else{
-			//Serial.print("\n NO:");
-			//Serial.println(end);
+			debug("\n MySerial said: invalid who = %T",end);
 			return areValid = false;
 		}		
 	}
 	return areValid;
+}
+
+void MySerial::print(const char *format, va_list args) {
+    //
+    // loop through format string
+    for (; *format != 0; ++format) {
+        if (*format == '%') {
+            ++format;
+            if (*format == '\0') break;
+            if (*format == '%') {
+                Serial.print(*format);
+                continue;
+            }
+            if( *format == 's' ) {
+				register char *s = (char *)va_arg( args, int );
+				Serial.print(s);
+				continue;
+			}
+            if( *format == 'd' || *format == 'i') {
+				Serial.print(va_arg( args, int ),DEC);
+				continue;
+			}
+            if( *format == 'x' ) {
+				Serial.print(va_arg( args, int ),HEX);
+				continue;
+			}
+            if( *format == 'X' ) {
+				Serial.print("0x");
+				Serial.print(va_arg( args, int ),HEX);
+				continue;
+			}
+            if( *format == 'b' ) {
+				Serial.print(va_arg( args, int ),BIN);
+				continue;
+			}
+            if( *format == 'B' ) {
+				Serial.print("0b");
+				Serial.print(va_arg( args, int ),BIN);
+				continue;
+			}
+            if( *format == 'l' ) {
+				Serial.print(va_arg( args, long ),DEC);
+				continue;
+			}
+
+            if( *format == 'c' ) {
+				Serial.print(va_arg( args, int ));
+				continue;
+			}
+            if( *format == 't' ) {
+				if (va_arg( args, int ) == 1) {
+					Serial.print("T");
+				}
+				else {
+					Serial.print("F");				
+				}
+				continue;
+			}
+            if( *format == 'T' ) {
+				if (va_arg( args, int ) == 1) {
+					Serial.print("true");
+				}
+				else {
+					Serial.print("false");				
+				}
+				continue;
+			}
+
+        }
+        Serial.print(*format);
+    }
+ }
+  
+bool MySerial::shouldPrint(Order::ARG mode){
+	bool result = false;
+	int indexMode = getArrayPositionOfThisMode(mode);
+	if(logMode[indexMode]) result = true;
+	return result;
 }
 
 

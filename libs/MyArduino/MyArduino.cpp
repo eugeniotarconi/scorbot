@@ -5,21 +5,17 @@
 
 #include "MyArduino.h"
 
-/** DEFAULT CONSTRUCTOR */
-MyArduino::MyArduino(){
-	
+MyArduino::MyArduino(MySerial *newMySerial,bool newMasterFlag){
+	masterFlag = newMasterFlag;
+	this->mySerial = newMySerial;
 }
 
-/** CONSTRUCTOR WITH AXES */
-MyArduino::MyArduino( vector<int> axisId ){
+MyArduino::MyArduino( vector<int> axisId ,bool newMasterFlag ){
 	
 }
-
 
 // -------------------- SETTERS GETTERS & PRINTS --------------------
 
-
-/** CONSTRUCTOR WITH AXES */
 void MyArduino::setAxes( vector<int> axisId ){
 	Serial.print("Este arduino ha sido creado con los ejes:\n");
 	Axis newAxis = Axis();
@@ -32,70 +28,85 @@ void MyArduino::setAxes( vector<int> axisId ){
 		
 }
 
+bool MyArduino::getMasterFlag(){
+	return this->masterFlag;
+}
 
 // --------------------     FUNCTIONALITIES      --------------------
 
+void MyArduino::serialCommunications(){
+	if(this->masterFlag){
+		// check the serial port and process
+		if(this->mySerial->getSentenceCompleteFlag()){            
+			this->orders = this->mySerial->getOrders();    
+			this->mySerial->logSentenceOrders();  
+			this->mySerial->flush();
+		};
+	};  
+}
 
-void MyArduino::processOrders( vector<Order> orders2Process ){
+void MyArduino::sendOrders2Slaves(){
+	this->mySerial->debug(CR"Master Say: i am sending orders to my slaves"CR);
+}
+
+void MyArduino::I2CCommunications(){
+	this->mySerial->debug(CR"Master Say: checking I2C recieved communications"CR);
+}
+
+void MyArduino::processOrders(){
   int result;
-  for(int nOrder=0; nOrder< orders2Process.size(); nOrder++){
-    switch( orders2Process[nOrder].recognizeCmdType() ){    
+  for(int nOrder=0; nOrder< this->orders.size(); nOrder++){
+    switch( this->orders[nOrder].recognizeCmdType() ){    
       case Order::CMD_TYPE::AXES:  
-		if(this->checkIfAxisIsMine(orders2Process[nOrder].who)){
-			axes[orders2Process[nOrder].who].processOrder(orders2Process[nOrder]);
+		this->mySerial->debug("\n MyArduino said: i am proccesing a axes cmd \n ");
+		if(this->checkIfAxisIsMine(this->orders[nOrder].who)){
+			axes[this->orders[nOrder].who].processOrder(this->orders[nOrder]);
 		}else{
-			Serial.println("that Axis doesnt belong to me; filterMyOrders is neccesary");
+			this->mySerial->debug("that Axis doesnt belong to me; filterMyOrders is neccesary");
 		}		
 		break;
       case Order::CMD_TYPE::ARD:       
-        result = this->processOrder(orders2Process[0]);
+        result = this->processOrder(this->orders[0]);
+		this->mySerial->debug("\n MyArduino said: i am proccesing a ard cmd \n ");
         break;
       default:
-        Serial.print("Cmd Type no válido");
+        this->mySerial->error("\n MyArduino said: Cmd Type no válido\n");
         break;
     }  
   }
-}
+  // TODO: habría que hacer un flush con más cuidado
+  this->orders.clear();
 
+}
 
 int MyArduino::processOrder(Order newOrder){
 	int resultOfProcessedOrder = -1; // error by default
-	Serial.print("\n Arduino- mi cmd es:");
-	Serial.println(newOrder.cmd.c_str());
-	
+	this->mySerial->debug("\n MyArduino said: mi cmd es:%s \n",newOrder.cmd.c_str());
 	switch(newOrder.recognizeCmd()){
 		case Order::CMD::LOG_MODE:
-			resultOfProcessedOrder = 1;
+			this->mySerial->setLogMode(newOrder.vectorArgs[0],newOrder.vectorArgs[1]);
 			break;		
 		default:
-			Serial.println("\n MyArduino: Comando Arduino desconocido:");
+			this->mySerial->debug("\n MyArduino: Comando Arduino desconocido \n");
 			resultOfProcessedOrder = -1;
 			break;
 	}
-	Serial.println(resultOfProcessedOrder);
 	return resultOfProcessedOrder;
 }
-
 
 void MyArduino::readStateMachine(){
 	Serial.println("\n Machine Pin state read");
 }
 
-
 void MyArduino::updateStateMachine(){
 	Serial.println("\n Machine Pin state update");
 }
 
-
-vector<Order> MyArduino::filterMyOrders(vector<Order> &orders){ 
-	vector<Order> ordersFiltered;
-	// devuelve un vector de ordenes con los whos que no sean suyos
-	// actualiza las ordenes dadas eliminando las que no son suyas
-	ordersFiltered = orders;
+void MyArduino::filterMyOrders(){ 
 	
-	return ordersFiltered;
+	this->mySerial->debug(CR"Master Say: i am filtering my orders"CR);
+	
 }
-
 
 bool MyArduino::checkIfAxisIsMine(int who){
 	bool isMine = false;
@@ -107,6 +118,6 @@ bool MyArduino::checkIfAxisIsMine(int who){
 }
 
 
-// --------------------    SUPPORT FUNCTIONS     --------------------
-// --------------------     PRIVATE METHODS      --------------------
+
+
 

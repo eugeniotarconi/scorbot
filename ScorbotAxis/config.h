@@ -17,21 +17,17 @@
 
 // Serial communication variables
 char    token                 = ' ';              // token for separate arguments
-int     SerialBaud            = 9600; 
-int     MaxSentenceComponents = 10;
+int     serialBaud            = 9600; 
 
 /**  GLOBAL VARIABLES ------------------------------------------------------------------------*/
 
-bool          iAmMaster    = true;
+bool          masterFlag    = true;
 vector<int>   axisId;
-MySerial      mySerial     = MySerial(SerialBaud,token,MaxSentenceComponents);
-MyArduino     myArduino    = MyArduino();
-vector<Order> orders;
-vector<Order> orders2Slaves;
+//this instance of My serial is injected in myarduino instance as an agreggation
+Order         injectedOrder = Order();
+MySerial      mySerial = MySerial(serialBaud,token,injectedOrder,"DEBUG");
+//delete(injectedOrder) ??
+MyArduino     myArduino = MyArduino(&mySerial,masterFlag);
 bool          serialError  = false; 
-
-
-
-
 
 #endif

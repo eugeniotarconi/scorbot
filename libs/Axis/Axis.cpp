@@ -24,7 +24,6 @@ short Axis::getId(){
 }
 
 void Axis::setBrakePin(short newBrakePin){
-	
 	this->brakePin = newBrakePin;
 	pinMode(this->brakePin, OUTPUT);
 	
@@ -39,7 +38,7 @@ int Axis::processOrder(Order newOrder){
 	
 	int resultOfProcessedOrder = -1; // error by default
 
-	Serial.print("\n Here Axis 1:");
+	Serial.print("\n  Here Axis 1:");
 	Serial.println(this->id);
 	Serial.print("Doing Cmd:");
 	Serial.println(newOrder.cmd.c_str());
@@ -61,7 +60,6 @@ int Axis::processOrder(Order newOrder){
 			resultOfProcessedOrder = -1;
 			break;
 	}
-	Serial.println(resultOfProcessedOrder);
 	return resultOfProcessedOrder;
 }
 

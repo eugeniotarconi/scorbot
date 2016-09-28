@@ -13,11 +13,16 @@ Order::Order(){
 	this->args = "";
 }
 
-
-// -------------------- SETTERS GETTERS & PRINTS --------------------
-
-
-// --------------------      FUNCTIONALITIES     --------------------
+void Order::setVectorArgs(vector<string> parsedArgs){
+	
+	for(int nArg=0; nArg<parsedArgs.size();nArg++){
+		vectorArgs.push_back(recognizeArg(parsedArgs[nArg]));
+		Serial.print("\n\n parsedArg:");
+		Serial.println(parsedArgs[nArg].c_str());
+		Serial.print("\n Equivale:");
+		Serial.println(recognizeArg(parsedArgs[nArg]));
+	}	
+}
 
 
 /** Recognize is a input string is a valid cmd type */
@@ -53,8 +58,7 @@ Order::CMD Order::recognizeCmd(string Cmd){
 		recognizedCmd = LOG_MODE;
 	}else if(!strcmp(cmd.c_str(),"SET_BRAKE_PIN")){	
 		recognizedCmd = SET_BRAKE_PIN;
-	}
-	else{	
+	}else{	
 		recognizedCmd = NO_RECONIZED_CMD;
 	} 
 	return recognizedCmd;
@@ -68,17 +72,26 @@ Order::CMD Order::recognizeCmd(){
 	
 }
 
-
 /** New funtion */
-Order::ARG Order::recognizeArg(string Arg){
+Order::ARG Order::recognizeArg(string arg){
 		
 	Order::ARG recognizedArg;
-	if(!strcmp(Arg.c_str(),"ALL")){	
+	if(!strcmp(arg.c_str(),"ALL")){	
 		recognizedArg = ALL;
-	}else if(!strcmp(Arg.c_str(),"ON")){
+	}else if(!strcmp(arg.c_str(),"ON")){
 		recognizedArg = ON;
-	}else if(!strcmp(Arg.c_str(),"OFF")){
+	}else if(!strcmp(arg.c_str(),"OFF")){
 		recognizedArg = OFF;
+	}else if(!strcmp(arg.c_str(),"NO_OUTPUT")){	
+		recognizedArg = NO_OUTPUT;
+	}else if(!strcmp(arg.c_str(),"ERROR")){
+		recognizedArg = ERROR;
+	}else if(!strcmp(arg.c_str(),"INFO")){
+		recognizedArg = INFO;
+	}else if(!strcmp(arg.c_str(),"DEBUG")){
+		recognizedArg = DEBUG;
+	}else if(!strcmp(arg.c_str(),"VERBOSE")){
+		recognizedArg = VERBOSE;
 	}else{		
 		recognizedArg = NO_RECONIZED_ARG;
 	} 
@@ -88,13 +101,20 @@ Order::ARG Order::recognizeArg(string Arg){
 }
 
 /** New funtion */
-Order::ARG Order::recognizeArg(){	
+Order::ARG Order::recognizeArg(){
+	//se debe devolver un array de ARG
 	return this->recognizeArg(this->args);	
 }
 
+void Order::clear(){
+	this->cmdType = "";
+	this->cmd = "";
+	this->who = -1;		
+	this->args = "";
+	this->vectorArgs.clear();
+}
 
 // --------------------    SUPPORT FUNCTIONS     --------------------
-
 
 
 
