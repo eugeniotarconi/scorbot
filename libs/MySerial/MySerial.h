@@ -29,21 +29,21 @@ extern "C" {
 #define CR "\r\n"
 
 /*!
-* <li><b>\%s</b>	replace with an string (char*)</li>
-* <li><b>\%c</b>	replace with an character</li>
-* <li><b>\%d</b>	replace with an integer value</li>
-* <li><b>\%l</b>	replace with an long value</li>
-* <li><b>\%x</b>	replace and convert integer value into hex</li>
-* <li><b>\%X</b>	like %x but combine with <b>0x</b>123AB</li>
-* <li><b>\%b</b>	replace and convert integer value into binary</li>
-* <li><b>\%B</b>	like %x but combine with <b>0b</b>10100011</li>
-* <li><b>\%t</b>	replace and convert boolean value into <b>"t"</b> or <b>"f"</b></li>
-* <li><b>\%T</b>	like %t but convert into <b>"true"</b> or <b>"false"</b></li>
-* <tr><td>0</td><td>LOG_MODE_NOOUTPUT</td><td>no output </td></tr>
-* <tr><td>1</td><td>LOG_MODE_ERRORS</td><td>only errors </td></tr>
-* <tr><td>2</td><td>LOG_MODE_INFOS</td><td>errors and info </td></tr>
-* <tr><td>3</td><td>LOG_MODE_DEBUG</td><td>errors, info and debug </td></tr>
-* <tr><td>4</td><td>LOG_MODE_VERBOSE</td><td>all </td></tr>
+* %s	replace with an string (char*)
+* %c	replace with an character
+* %d	replace with an integer value
+* \%l	replace with an long value
+* \%x	replace and convert integer value into hex
+* \%X	like %x but combine with 0x123AB
+* \%b	replace and convert integer value into binary
+* \%B	like %x but combine with 0b10100011
+* \%t	replace and convert boolean value into "t" or "f"
+* \%T	like %t but convert into "true" or "false"
+* 0LOG_MODE_NOOUTPUT no output 
+* 1LOG_MODE_ERRORSonly errors 
+* 2LOG_MODE_INFOS errors and info 
+* 3LOG_MODE_DEBUG errors, info and debug 
+* 4LOG_MODE_VERBOSE all 
 * <h1>History</h1><br>
 */
 

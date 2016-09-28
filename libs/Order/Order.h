@@ -49,30 +49,19 @@ class Order{
 		/** STATUS:V  ||	DEFAULT DESTRUCTOR */
 		~Order(){};
 		
+		/** STATUS:V  ||	DEFAULT DESTRUCTOR */
 		void setVectorArgs(vector<string> ParsedArgs);
 		
-		/** STATUS:IC || Recognize is a input string is a valid cmd type 	 
-		*
-		*  It is useful before set the cmdType variable; verify if it is valid before update or set the instance
-		*/
+		/** STATUS:IC || Recognize is a input string is a valid cmd type */
 		Order::CMD_TYPE recognizeCmdType(string Word);
 
-		/** STATUS:IC || Pass a self string type to his enum value	 
-		*
-		*  It is useful to use the instance's variable cmdType inside a switch; pass string to enum
-		*/
+		/** STATUS:IC || Pass a self string type to his enum value	*/
 		Order::CMD_TYPE recognizeCmdType();
 		
-		/** STATUS:IC || Recognize is a input string is a valid cmd	 
-		*
-		*  It is useful before set the cmd variable; verify if it is valid before update or set the instance
-		*/
+		/** STATUS:IC || Recognize is a input string is a valid cmd	 */
 		Order::CMD recognizeCmd(string Word);
 
-		/** STATUS:IC || Pass a self string type to his enum value	 
-		*
-		*  It is useful to use the instance's variable cmd inside a switch; pass string to enum
-		*/
+		/** STATUS:IC || Pass a self string type to his enum value	*/
 		Order::CMD recognizeCmd();
 		
 		/** STATUS:IC ||	 */

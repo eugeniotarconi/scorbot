@@ -18,7 +18,7 @@ MyArduino::MyArduino( vector<int> axisId ,bool newMasterFlag ){
 
 void MyArduino::setAxes( vector<int> axisId ){
 	Serial.print("Este arduino ha sido creado con los ejes:\n");
-	Axis newAxis = Axis();
+	Axis newAxis = Axis(this->mySerial);
 	for (int i = 0; i < axisId.size() ; i++){
 		Serial.print("\t nuevo eje con ID:");
 		Serial.println(axisId[i]);

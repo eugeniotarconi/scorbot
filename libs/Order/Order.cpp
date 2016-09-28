@@ -24,8 +24,6 @@ void Order::setVectorArgs(vector<string> parsedArgs){
 	}	
 }
 
-
-/** Recognize is a input string is a valid cmd type */
 Order::CMD_TYPE Order::recognizeCmdType(string CmdType){
 	
 	Order::CMD_TYPE recognizedCmdType;
@@ -40,7 +38,6 @@ Order::CMD_TYPE Order::recognizeCmdType(string CmdType){
 	
 }
 
-/** Pass a self string type to his enum value */
 Order::CMD_TYPE Order::recognizeCmdType(){
 	
 	Order::CMD_TYPE recognizedCmdType = this->recognizeCmdType(this->cmdType);
@@ -48,7 +45,6 @@ Order::CMD_TYPE Order::recognizeCmdType(){
 	
 }
 
-/** Recognize is a input string is a valid cmd */
 Order::CMD Order::recognizeCmd(string Cmd){
 	
 	Order::CMD recognizedCmd;
@@ -65,14 +61,12 @@ Order::CMD Order::recognizeCmd(string Cmd){
 	
 }
 
-/** Pass a self string type to his enum value */
 Order::CMD Order::recognizeCmd(){	
 	Order::CMD recognizedCmd = this->recognizeCmd(this->cmd);
 	return recognizedCmd;
 	
 }
 
-/** New funtion */
 Order::ARG Order::recognizeArg(string arg){
 		
 	Order::ARG recognizedArg;
@@ -100,7 +94,6 @@ Order::ARG Order::recognizeArg(string arg){
 	
 }
 
-/** New funtion */
 Order::ARG Order::recognizeArg(){
 	//se debe devolver un array de ARG
 	return this->recognizeArg(this->args);	
@@ -114,7 +107,7 @@ void Order::clear(){
 	this->vectorArgs.clear();
 }
 
-// --------------------    SUPPORT FUNCTIONS     --------------------
+
 
 
 
